@@ -41,8 +41,10 @@ NEXT_PUBLIC_DEFAULT_TIMEZONE=Asia/Jerusalem
 
 1. `202607160001_initial_schema.sql`
 2. `202607160002_seed_demo.sql`
+3. `202607160003_realtime_publication.sql`
 
 הסכמה כוללת RLS לכל הטבלאות, `board_key` ציבורי לקריאה של הלוח, ו־`admin_users` לשיוך משתמשי Supabase Auth לבית כנסת.
+המיגרציה השלישית מוסיפה את טבלאות הלוח ל־`supabase_realtime` כדי שהמסך יתרענן מיד אחרי שינוי בפאנל.
 
 ## בדיקות ואימות
 
@@ -50,6 +52,7 @@ NEXT_PUBLIC_DEFAULT_TIMEZONE=Asia/Jerusalem
 npm run typecheck
 npm test
 npm run lint
+npm run test:e2e
 npm run build
 ```
 

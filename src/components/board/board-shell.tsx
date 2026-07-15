@@ -7,6 +7,7 @@ import { BoardScreen } from "./board-screen";
 import { resolvePrayerTimes } from "@/lib/zmanim/resolvePrayerTime";
 import { getDailyZmanimForSynagogue, getZmanByKey } from "@/lib/zmanim/engine";
 import { addMinutes, parseLocalTime } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 interface BoardShellProps {
   boardKey: string;
@@ -65,6 +66,45 @@ export function BoardShell({ boardKey, initialPayload }: BoardShellProps) {
     const timer = window.setInterval(refresh, 15 * 60 * 1000);
     return () => window.clearInterval(timer);
   }, [refresh]);
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+
+    try {
+      const supabase = createClient();
+      const channel = supabase.channel(`board-live:${payload.synagogue.id}`);
+      const tables = [
+        "board_settings",
+        "screens",
+        "messages",
+        "prayer_times",
+        "iluy_neshama",
+        "shiurim",
+        "halachot",
+        "parnasim",
+        "congregants",
+        "synagogues",
+      ];
+
+      tables.forEach((table) => {
+        channel.on(
+          "postgres_changes",
+          { event: "*", schema: "public", table, filter: table === "synagogues" ? `id=eq.${payload.synagogue.id}` : `synagogue_id=eq.${payload.synagogue.id}` },
+          () => {
+            void refresh();
+          },
+        );
+      });
+
+      void channel.subscribe();
+
+      return () => {
+        void supabase.removeChannel(channel);
+      };
+    } catch {
+      return;
+    }
+  }, [payload.synagogue.id, refresh]);
 
   useEffect(() => {
     const channel = "BroadcastChannel" in window ? new BroadcastChannel(`board:${boardKey}`) : null;
