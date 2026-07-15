@@ -39,7 +39,12 @@ export function ResourceManager<T extends { id: string }>({
   const persist = useCallback((nextRows: T[]) => {
     setRows(nextRows);
     window.localStorage.setItem(storageKey, JSON.stringify(nextRows));
-  }, [storageKey]);
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL && "BroadcastChannel" in window) {
+      const channel = new BroadcastChannel("board:demo-board");
+      channel.postMessage({ resource, storageKey });
+      channel.close();
+    }
+  }, [resource, storageKey]);
 
   async function updateRow(formData: FormData) {
     const id = String(formData.get("id") ?? crypto.randomUUID());

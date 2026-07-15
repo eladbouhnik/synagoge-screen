@@ -20,7 +20,7 @@ export function BoardShell({ boardKey, initialPayload }: BoardShellProps) {
   const [payload, setPayload] = useState<BoardPayload>(() => {
     if (typeof window === "undefined") return initialPayload;
     const cached = window.localStorage.getItem(cacheKey(boardKey));
-    return cached ? (JSON.parse(cached) as BoardPayload) : initialPayload;
+    return applyDemoOverrides(cached ? (JSON.parse(cached) as BoardPayload) : initialPayload);
   });
   const [now, setNow] = useState(() => new Date());
   const [index, setIndex] = useState(0);
@@ -108,7 +108,13 @@ export function BoardShell({ boardKey, initialPayload }: BoardShellProps) {
 
   useEffect(() => {
     const channel = "BroadcastChannel" in window ? new BroadcastChannel(`board:${boardKey}`) : null;
-    channel?.addEventListener("message", refresh);
+    channel?.addEventListener("message", () => {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        setPayload((current) => applyDemoOverrides(current));
+        return;
+      }
+      void refresh();
+    });
     return () => channel?.close();
   }, [boardKey, refresh]);
 
@@ -143,6 +149,28 @@ export function BoardShell({ boardKey, initialPayload }: BoardShellProps) {
       </div>
     </main>
   );
+}
+
+function readRows<T>(key: string, fallback: T[]) {
+  if (typeof window === "undefined") return fallback;
+  const stored = window.localStorage.getItem(key);
+  return stored ? (JSON.parse(stored) as T[]) : fallback;
+}
+
+function applyDemoOverrides(payload: BoardPayload): BoardPayload {
+  if (typeof window === "undefined" || process.env.NEXT_PUBLIC_SUPABASE_URL) return payload;
+
+  return {
+    ...payload,
+    screens: readRows("admin:screens", payload.screens),
+    messages: readRows("admin:messages", payload.messages),
+    prayerTimes: readRows("admin:prayer-times", payload.prayerTimes),
+    shiurim: readRows("admin:shiurim", payload.shiurim),
+    iluyNeshama: readRows("admin:iluy-neshama", payload.iluyNeshama),
+    halachot: readRows("admin:halachot", payload.halachot),
+    parnasim: readRows("admin:parnasim", payload.parnasim),
+    congregants: readRows("admin:congregants", payload.congregants),
+  };
 }
 
 function getLockedScreen(payload: BoardPayload, screens: Screen[], now: Date) {
