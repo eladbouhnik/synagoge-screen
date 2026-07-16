@@ -17,11 +17,11 @@ const synagogueId = "11111111-1111-4111-8111-111111111111";
 export const demoSynagogue: Synagogue = {
   id: synagogueId,
   board_key: "demo-board",
-  name: "בית הכנסת תפארת ירושלים",
-  address: "רחוב המלך ג'ורג' 24, ירושלים",
-  latitude: 31.778,
-  longitude: 35.235,
-  elevation: 800,
+  name: "בית הכנסת אור הגליל",
+  address: "צפת, הגליל העליון",
+  latitude: 32.9646,
+  longitude: 35.496,
+  elevation: 900,
   timezone: "Asia/Jerusalem",
   nusach: "ספרדי",
   candle_lighting_minutes: 40,
@@ -77,11 +77,11 @@ export const demoMessages: Message[] = [
 ];
 
 export const demoPrayerTimes: PrayerTime[] = [
-  { id: "pt-1", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית ותיקין", time_mode: "relative", fixed_time: null, relative_to: "sunrise", offset_minutes: -8, relative_day: null, rounding: "nearest5", minyan_number: 1 },
-  { id: "pt-2", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית", time_mode: "fixed", fixed_time: "07:15", relative_to: null, offset_minutes: 0, relative_day: null, rounding: "none", minyan_number: 2 },
-  { id: "pt-3", synagogue_id: synagogueId, day_type: "weekday", prayer: "mincha", label: "מנחה", time_mode: "relative", fixed_time: null, relative_to: "sunset", offset_minutes: -20, relative_day: "tuesday", rounding: "nearest5", minyan_number: 1 },
-  { id: "pt-4", synagogue_id: synagogueId, day_type: "weekday", prayer: "arvit", label: "ערבית", time_mode: "relative", fixed_time: null, relative_to: "tzet", offset_minutes: 5, relative_day: null, rounding: "nearest5", minyan_number: 1 },
-  { id: "pt-5", synagogue_id: synagogueId, day_type: "shabbat", prayer: "mincha", label: "מנחה ערב שבת", time_mode: "relative", fixed_time: null, relative_to: "candle_lighting", offset_minutes: -20, relative_day: "friday", rounding: "nearest5", minyan_number: 1 },
+  { id: "pt-1", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית ותיקין", time_mode: "relative", fixed_time: null, relative_to: "sunrise", offset_minutes: -8, relative_day: null, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-2", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית", time_mode: "fixed", fixed_time: "07:15", relative_to: null, offset_minutes: 0, relative_day: null, rounding: "none", minyan_number: 2, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-3", synagogue_id: synagogueId, day_type: "weekday", prayer: "mincha", label: "מנחה", time_mode: "relative", fixed_time: null, relative_to: "sunset", offset_minutes: -20, relative_day: null, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-4", synagogue_id: synagogueId, day_type: "weekday", prayer: "arvit", label: "ערבית", time_mode: "relative", fixed_time: null, relative_to: "tzet", offset_minutes: 5, relative_day: null, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-5", synagogue_id: synagogueId, day_type: "shabbat", prayer: "mincha", label: "מנחה ערב שבת", time_mode: "relative", fixed_time: null, relative_to: "candle_lighting", offset_minutes: -20, relative_day: "friday", rounding: "nearest5", minyan_number: 1, days: ["friday"], is_active: true },
 ];
 
 export const demoIluyNeshama: IluyNeshama[] = [

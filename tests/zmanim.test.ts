@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import { demoPrayerTimes, demoSynagogue } from "@/lib/demo-data";
 import { getDailyZmanimForSynagogue, getRelativeDate, roundZman } from "@/lib/zmanim/engine";
 import { resolvePrayerTime } from "@/lib/zmanim/resolvePrayerTime";
+import { matchesSchedule } from "@/lib/schedule/rules";
 
 describe("zmanim engine", () => {
-  it("calculates stable daily zmanim for Jerusalem", () => {
+  it("calculates stable daily zmanim for Safed", () => {
     const zmanim = getDailyZmanimForSynagogue(demoSynagogue, new Date("2026-07-16T12:00:00.000Z"));
 
-    expect(zmanim.sunrise?.toISOString()).toMatch(/^2026-07-16T02:39:/);
-    expect(zmanim.sunset?.toISOString()).toMatch(/^2026-07-16T16:50:/);
-    expect(zmanim.candleLighting?.toISOString()).toMatch(/^2026-07-16T16:10:/);
+    expect(zmanim.sunrise?.toISOString()).toMatch(/^2026-07-16T02:35:/);
+    expect(zmanim.sunset?.toISOString()).toMatch(/^2026-07-16T16:52:/);
+    expect(zmanim.candleLighting?.toISOString()).toMatch(/^2026-07-16T16:12:/);
     expect(zmanim.plagHamincha).toBeInstanceOf(Date);
   });
 
@@ -36,5 +37,15 @@ describe("zmanim engine", () => {
     expect(fixed.resolvedAt?.toISOString()).toBe("2026-07-16T04:15:00.000Z");
     expect(relative.resolvedAt).toBeInstanceOf(Date);
     expect(relative.resolvedAt!.getUTCMinutes() % 5).toBe(0);
+  });
+
+  it("applies weekday, Shabbat, and date-range schedule rules", () => {
+    const thursday = new Date("2026-07-16T12:00:00.000Z");
+    const shabbat = new Date("2026-07-18T12:00:00.000Z");
+
+    expect(matchesSchedule(demoPrayerTimes[0]!, thursday, demoSynagogue.timezone)).toBe(true);
+    expect(matchesSchedule(demoPrayerTimes[0]!, shabbat, demoSynagogue.timezone)).toBe(false);
+    expect(matchesSchedule(demoPrayerTimes[4]!, shabbat, demoSynagogue.timezone)).toBe(false);
+    expect(matchesSchedule({ ...demoPrayerTimes[0]!, end_date: "2026-07-15" }, thursday, demoSynagogue.timezone)).toBe(false);
   });
 });

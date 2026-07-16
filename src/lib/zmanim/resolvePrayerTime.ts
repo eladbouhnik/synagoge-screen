@@ -1,6 +1,7 @@
 import type { PrayerTime, RoundingMode, Synagogue } from "@/types/domain";
 import { addMinutes, parseLocalTime } from "@/lib/utils";
 import { getDailyZmanimForSynagogue, getRelativeDate, getZmanByKey, roundZman } from "./engine";
+import { matchesSchedule } from "@/lib/schedule/rules";
 
 export interface ResolvedPrayerTime {
   source: PrayerTime;
@@ -44,6 +45,7 @@ export function resolvePrayerTimes(
   defaultRounding: RoundingMode = "none",
 ) {
   return prayerTimes
+    .filter((prayerTime) => matchesSchedule(prayerTime, date, synagogue.timezone))
     .map((prayerTime) => resolvePrayerTime(prayerTime, synagogue, date, defaultRounding))
     .sort((a, b) => (a.resolvedAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.resolvedAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
 }

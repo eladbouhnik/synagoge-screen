@@ -13,8 +13,15 @@ export type DayType = "weekday" | "shabbat" | "holiday";
 export type TimeMode = "fixed" | "relative";
 export type RelativeZmanKey =
   | "sunrise"
+  | "sea_level_sunrise"
+  | "sof_zman_shema_gra"
+  | "sof_zman_tfila_gra"
+  | "mincha_gedola"
+  | "mincha_ketana"
   | "sunset"
+  | "sea_level_sunset"
   | "tzet"
+  | "tzet_72"
   | "candle_lighting"
   | "plag_hamincha"
   | "chatzot";
@@ -92,6 +99,11 @@ export interface PrayerTime {
   relative_day: RelativeDay | null;
   rounding: RoundingMode | null;
   minyan_number: number;
+  days?: RelativeDay[];
+  start_date?: string | null;
+  end_date?: string | null;
+  holiday_tags?: string[];
+  is_active?: boolean;
 }
 
 export interface IluyNeshama {
@@ -117,6 +129,17 @@ export interface Shiur {
   offset_minutes: number;
   duration_minutes: number;
   is_active: boolean;
+  start_date?: string | null;
+  end_date?: string | null;
+  holiday_tags?: string[];
+}
+
+export interface TeamInvitation {
+  id: string;
+  synagogue_id: string;
+  email: string;
+  role: "owner" | "editor" | "viewer";
+  created_at: string;
 }
 
 export interface Halacha {

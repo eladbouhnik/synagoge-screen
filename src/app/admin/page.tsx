@@ -22,13 +22,13 @@ export default function AdminPage() {
       </div>
       <div className="grid gap-4 md:grid-cols-4">
         {metrics.map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-border bg-muted p-5">
+          <div key={label} className="rounded-lg border border-border bg-muted p-5 shadow-[inset_0_2px_0_0_var(--board-gold-muted)]">
             <p className="text-sm text-muted-foreground">{label}</p>
             <p className="mt-3 text-4xl font-black">{value}</p>
           </div>
         ))}
       </div>
-      <div className="rounded-lg border border-border bg-background p-6">
+      <div className="rounded-lg border border-border bg-background p-6 shadow-[inset_0_2px_0_0_var(--board-gold-muted)]">
         <h3 className="text-2xl font-black">מצב מערכת</h3>
         <div className="mt-5 grid gap-3 text-muted-foreground">
           <p>מצב דמו פעיל כל עוד משתני Supabase אינם מוגדרים.</p>

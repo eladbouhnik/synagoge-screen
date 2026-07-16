@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Crown, Star } from "lucide-react";
 import type { BoardPayload, Screen } from "@/types/domain";
 import { getVisibleScreens, getNextScreenIndex } from "@/lib/rotation/rotation";
 import { BoardScreen } from "./board-screen";
@@ -8,6 +9,7 @@ import { resolvePrayerTimes } from "@/lib/zmanim/resolvePrayerTime";
 import { getDailyZmanimForSynagogue, getZmanByKey } from "@/lib/zmanim/engine";
 import { addMinutes, parseLocalTime } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { matchesSchedule } from "@/lib/schedule/rules";
 
 interface BoardShellProps {
   boardKey: string;
@@ -128,22 +130,27 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
   }
 
   return (
-    <main className="board-shell min-h-screen overflow-hidden text-board-foreground">
-      <div className="flex min-h-screen flex-col p-[3vw]">
-        <header className="flex items-start justify-between gap-6 border-b border-board-foreground/15 pb-5">
+    <main className="board-shell relative min-h-screen overflow-hidden text-board-foreground">
+      <div className="board-ornament board-ornament-right" aria-hidden="true"><Star /></div>
+      <div className="board-ornament board-ornament-left" aria-hidden="true"><Star /></div>
+      <div className="board-frame relative flex min-h-screen flex-col p-[3vw]">
+        <header className="flex items-start justify-between gap-6 border-b border-[color:var(--board-gold-muted)] pb-5">
           <div>
-            <p className="text-2xl text-board-foreground/65">{payload.synagogue.address}</p>
-            <h1 className="mt-1 text-5xl font-black leading-none md:text-7xl">{payload.synagogue.name}</h1>
+            <p className="board-kicker text-2xl">{payload.synagogue.address}</p>
+            <h1 className="mt-1 text-4xl font-black leading-none md:text-7xl">{payload.synagogue.name}</h1>
           </div>
-          <div className="text-left text-board-foreground/70">
+          <div className="flex items-start gap-3 text-left text-board-foreground/70">
+            <Crown className="mt-1 h-7 w-7 text-[color:var(--board-gold)]" aria-hidden="true" />
+            <div>
             <p>סנכרון אחרון</p>
             <p>{new Date(lastSync).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}</p>
+            </div>
           </div>
         </header>
         <div className="grid flex-1 place-items-stretch py-8">
           <BoardScreen payload={payload} screen={displayScreen as Screen} />
         </div>
-        <footer className="flex items-center justify-between border-t border-board-foreground/15 pt-4 text-2xl text-board-foreground/70">
+        <footer className="flex items-center justify-between border-t border-[color:var(--board-gold-muted)] pt-4 text-2xl text-board-foreground/70">
           <span>{payload.synagogue.donor_dedication}</span>
           <span>{index + 1}/{screens.length}</span>
         </footer>
@@ -190,7 +197,7 @@ function getLockedScreen(payload: BoardPayload, screens: Screen[], now: Date) {
 
   const zmanim = getDailyZmanimForSynagogue(payload.synagogue, now);
   const activeShiur = payload.shiurim.some((shiur) => {
-    if (!shiur.is_active) return false;
+    if (!matchesSchedule(shiur, now, payload.synagogue.timezone)) return false;
     const start = shiur.time_mode === "fixed" && shiur.fixed_time
       ? parseLocalTime(now, shiur.fixed_time, payload.synagogue.timezone)
       : addMinutes(getZmanByKey(zmanim, shiur.relative_to) ?? now, shiur.offset_minutes);

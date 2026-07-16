@@ -6,7 +6,8 @@ import { Check, Pencil, Plus, Trash2 } from "lucide-react";
 export interface FieldDef<T extends { id: string }> {
   key: keyof T;
   label: string;
-  type?: "text" | "textarea" | "number" | "time" | "date" | "checkbox";
+  type?: "text" | "textarea" | "number" | "time" | "date" | "checkbox" | "select" | "weekday-selector" | "tag-list";
+  options?: { value: string; label: string }[];
 }
 
 interface ResourceManagerProps<T extends { id: string }> {
@@ -34,7 +35,7 @@ export function ResourceManager<T extends { id: string }>({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const active = useMemo(() => rows.find((row) => row.id === editingId) ?? rows[0], [editingId, rows]);
+  const active = useMemo(() => rows.find((row) => row.id === editingId) ?? null, [editingId, rows]);
 
   const persist = useCallback((nextRows: T[]) => {
     setRows(nextRows);
@@ -47,10 +48,21 @@ export function ResourceManager<T extends { id: string }>({
   }, [resource, storageKey]);
 
   async function updateRow(formData: FormData) {
-    const id = String(formData.get("id") ?? crypto.randomUUID());
+    const id = String(formData.get("id") || crypto.randomUUID());
     const row = Object.fromEntries(fields.map((field) => {
-      const rawValue = formData.get(String(field.key));
-      const value = field.type === "checkbox" ? rawValue === "on" : field.type === "number" ? Number(rawValue) : rawValue;
+      const name = String(field.key);
+      const rawValue = formData.get(name);
+      const value = field.type === "checkbox"
+        ? rawValue === "on"
+        : field.type === "number"
+          ? Number(rawValue)
+          : field.type === "weekday-selector"
+            ? formData.getAll(name).map(String)
+            : field.type === "tag-list"
+              ? String(rawValue ?? "").split(",").map((item) => item.trim()).filter(Boolean)
+              : rawValue === "" && ["time", "date", "select"].includes(field.type ?? "")
+                ? null
+                : rawValue;
       return [field.key, value];
     })) as Partial<T>;
     const nextRow = { ...(rows.find((item) => item.id === id) ?? rows[0]), ...row, id } as T;
@@ -141,7 +153,7 @@ export function ResourceManager<T extends { id: string }>({
               {rows.map((row) => (
                 <tr key={row.id} className="border-t border-border">
                   {fields.slice(0, 3).map((field) => (
-                  <td key={String(field.key)} className="max-w-xs truncate px-4 py-3">{String(row[field.key] ?? "")}</td>
+                  <td key={String(field.key)} className="max-w-xs truncate px-4 py-3">{displayValue(field, row)}</td>
                   ))}
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
@@ -168,6 +180,25 @@ export function ResourceManager<T extends { id: string }>({
                   <textarea name={String(field.key)} defaultValue={String(active?.[field.key] ?? "")} className="min-h-28 rounded-md border border-border bg-background p-3 font-normal" />
                 ) : field.type === "checkbox" ? (
                   <input name={String(field.key)} type="checkbox" defaultChecked={Boolean(active?.[field.key])} className="h-5 w-5 accent-primary" />
+                ) : field.type === "select" ? (
+                  <select name={String(field.key)} defaultValue={String(active?.[field.key] ?? "")} className="h-11 rounded-md border border-border bg-background px-3 font-normal">
+                    <option value="">בחרו</option>
+                    {field.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
+                ) : field.type === "weekday-selector" ? (
+                  <span className="grid grid-cols-2 gap-2 rounded-md border border-border bg-background p-3 font-normal">
+                    {field.options?.map((option) => {
+                      const selected = Array.isArray(active?.[field.key]) && (active?.[field.key] as unknown[]).includes(option.value);
+                      return (
+                        <label key={option.value} className="flex items-center gap-2 text-xs">
+                          <input name={String(field.key)} type="checkbox" value={option.value} defaultChecked={selected} className="h-4 w-4 accent-primary" />
+                          {option.label}
+                        </label>
+                      );
+                    })}
+                  </span>
+                ) : field.type === "tag-list" ? (
+                  <input name={String(field.key)} defaultValue={Array.isArray(active?.[field.key]) ? (active?.[field.key] as unknown[]).join(", ") : ""} placeholder="פסח, ראש השנה" className="h-11 rounded-md border border-border bg-background px-3 font-normal" />
                 ) : (
                   <input name={String(field.key)} type={field.type ?? "text"} defaultValue={String(active?.[field.key] ?? "")} className="h-11 rounded-md border border-border bg-background px-3 font-normal" />
                 )}
@@ -182,4 +213,11 @@ export function ResourceManager<T extends { id: string }>({
       </div>
     </section>
   );
+}
+
+function displayValue<T extends { id: string }>(field: FieldDef<T>, row: T) {
+  const value = row[field.key];
+  if (Array.isArray(value)) return value.join(", ");
+  const option = field.options?.find((item) => item.value === String(value));
+  return option?.label ?? String(value ?? "");
 }

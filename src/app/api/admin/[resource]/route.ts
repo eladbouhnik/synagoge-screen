@@ -12,6 +12,7 @@ async function getSynagogueId() {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return null;
+  await supabase.rpc("claim_synagogue_invitations");
 
   const { data } = await supabase
     .from("admin_users")

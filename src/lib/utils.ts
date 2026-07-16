@@ -30,6 +30,18 @@ export function formatDate(date: Date | string, timeZone = "Asia/Jerusalem") {
   }).format(value);
 }
 
+export function formatLocalIsoDate(date: Date | string, timeZone = "Asia/Jerusalem") {
+  const value = typeof date === "string" ? new Date(date) : date;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 export function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60_000);
 }
@@ -52,6 +64,6 @@ export function parseLocalTime(date: Date, hhmm: string, timeZone = "Asia/Jerusa
 }
 
 export function isActiveDateRange(startDate?: string | null, endDate?: string | null, now = new Date()) {
-  const today = now.toISOString().slice(0, 10);
+  const today = formatLocalIsoDate(now);
   return (!startDate || startDate <= today) && (!endDate || today <= endDate);
 }

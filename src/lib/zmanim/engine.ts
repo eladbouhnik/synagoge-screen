@@ -122,8 +122,15 @@ export function getZmanByKey(zmanim: DailyZmanim, key: RelativeZmanKey | null) {
 
   const map: Record<RelativeZmanKey, Date | null> = {
     sunrise: zmanim.sunrise,
+    sea_level_sunrise: zmanim.seaLevelSunrise,
+    sof_zman_shema_gra: zmanim.sofZmanShemaGra,
+    sof_zman_tfila_gra: zmanim.sofZmanTfilaGra,
+    mincha_gedola: zmanim.minchaGedola,
+    mincha_ketana: zmanim.minchaKetana,
     sunset: zmanim.sunset,
+    sea_level_sunset: zmanim.seaLevelSunset,
     tzet: zmanim.tzet,
+    tzet_72: zmanim.tzet72,
     candle_lighting: zmanim.candleLighting,
     plag_hamincha: zmanim.plagHamincha,
     chatzot: zmanim.chatzot,

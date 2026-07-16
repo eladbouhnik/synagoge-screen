@@ -19,6 +19,7 @@ export type AdminResourceKey =
   | "halachot"
   | "parnasim"
   | "congregants"
+  | "team-invitations"
   | "settings";
 
 interface ResourceConfig {
@@ -37,6 +38,7 @@ export const adminResources: Record<AdminResourceKey, ResourceConfig> = {
   halachot: { table: "halachot", demoRows: demoHalachot, orderBy: "category" },
   parnasim: { table: "parnasim", demoRows: demoParnasim, orderBy: "start_date" },
   congregants: { table: "congregants", demoRows: demoCongregants, orderBy: "full_name" },
+  "team-invitations": { table: "synagogue_invitations", demoRows: [], orderBy: "created_at" },
   settings: { table: "synagogues", demoRows: [demoSynagogue], singleton: true },
 };
 

@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(0.985 0.008 84);
-  --foreground: oklch(0.18 0.025 74);
-  --muted: oklch(0.93 0.018 84);
-  --muted-foreground: oklch(0.45 0.025 74);
-  --border: oklch(0.84 0.018 84);
-  --primary: oklch(0.38 0.08 158);
-  --primary-foreground: oklch(0.98 0.006 84);
-  --accent: oklch(0.74 0.14 75);
-  --board: oklch(0.17 0.025 203);
-  --board-foreground: oklch(0.97 0.01 86);
+  --background: oklch(0.975 0.008 252);
+  --foreground: oklch(0.22 0.025 255);
+  --muted: oklch(0.935 0.014 252);
+  --muted-foreground: oklch(0.47 0.025 255);
+  --border: oklch(0.82 0.02 252);
+  --primary: oklch(0.27 0.055 255);
+  --primary-foreground: oklch(0.96 0.03 88);
+  --accent: oklch(0.72 0.115 86);
+  --board: oklch(0.17 0.035 255);
+  --board-foreground: oklch(0.96 0.015 92);
+  --board-gold: oklch(0.79 0.105 86);
+  --board-gold-muted: oklch(0.65 0.07 86 / 0.52);
+  --board-panel: oklch(0.22 0.036 255 / 0.78);
 }
 
 @theme inline {
@@ -31,6 +34,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-assistant), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -41,9 +45,101 @@ select {
 }
 
 .board-shell {
-  background:
-    radial-gradient(circle at 15% 20%, oklch(0.32 0.05 171 / 0.35), transparent 32rem),
-    linear-gradient(135deg, oklch(0.16 0.028 205), oklch(0.22 0.035 150));
+  background: var(--board);
+}
+
+.board-shell::before {
+  content: "";
+  position: absolute;
+  inset: 1.15vw;
+  border: 1px solid var(--board-gold-muted);
+  pointer-events: none;
+}
+
+.board-frame::before,
+.board-frame::after {
+  content: "";
+  position: absolute;
+  top: 1.75rem;
+  bottom: 1.75rem;
+  width: 1px;
+  background: var(--board-gold-muted);
+  pointer-events: none;
+}
+
+.board-frame::before {
+  right: 1.75rem;
+}
+
+.board-frame::after {
+  left: 1.75rem;
+}
+
+.board-kicker {
+  color: var(--board-gold);
+  letter-spacing: 0;
+}
+
+.board-panel {
+  border: 1px solid var(--board-gold-muted);
+  background: var(--board-panel);
+  box-shadow: inset 0 0 0 1px oklch(0.95 0.03 92 / 0.05);
+}
+
+.board-ornament {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  height: 3rem;
+  width: 3rem;
+  place-items: center;
+  color: var(--board-gold);
+  opacity: 0.9;
+}
+
+.board-ornament svg {
+  height: 1.7rem;
+  width: 1.7rem;
+  stroke-width: 1.15;
+}
+
+.board-ornament::before,
+.board-ornament::after {
+  content: "";
+  position: absolute;
+  height: 1px;
+  width: 2.2rem;
+  background: var(--board-gold-muted);
+}
+
+.board-ornament::before {
+  transform: rotate(45deg);
+}
+
+.board-ornament::after {
+  transform: rotate(-45deg);
+}
+
+.board-ornament-right {
+  top: 2.4vw;
+  right: 2.4vw;
+}
+
+.board-ornament-left {
+  bottom: 2.4vw;
+  left: 2.4vw;
+}
+
+@media (max-width: 640px) {
+  .board-shell::before {
+    inset: 0.5rem;
+  }
+
+  .board-frame::before,
+  .board-frame::after,
+  .board-ornament {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

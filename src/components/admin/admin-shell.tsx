@@ -13,23 +13,25 @@ const nav = [
   { href: "/admin/parnasim", label: "פרנסים", icon: Users },
   { href: "/admin/congregants", label: "מתפללים", icon: Users },
   { href: "/admin/settings", label: "הגדרות", icon: Settings },
+  { href: "/admin/team", label: "משתמשים והרשאות", icon: Users },
   { href: "/admin/preview", label: "תצוגה מקדימה", icon: Eye },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 right-0 hidden w-72 border-l border-border bg-muted/70 p-5 lg:block">
+      <aside className="fixed inset-y-0 right-0 hidden w-72 border-l border-[color:var(--board-gold-muted)] bg-board p-5 text-board-foreground lg:block">
         <Link href="/admin" className="block">
-          <p className="text-sm text-muted-foreground">פאנל ניהול</p>
+          <p className="text-sm text-[color:var(--board-gold)]">פאנל ניהול</p>
           <h1 className="mt-1 text-3xl font-black leading-tight">לוח בית כנסת</h1>
         </Link>
-        <nav className="mt-8 grid gap-1">
+        <div className="my-7 h-px bg-[color:var(--board-gold-muted)]" />
+        <nav className="grid gap-1">
           {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={cn("flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold transition hover:bg-background")}
+              className={cn("flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold transition hover:bg-board-foreground/10 hover:text-[color:var(--board-gold)]")}
             >
               <item.icon className="h-4 w-4" />
               {item.label}

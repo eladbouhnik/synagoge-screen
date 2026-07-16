@@ -11,7 +11,7 @@ test("home links to board and admin", async ({ page }) => {
 test("admin dashboard renders demo data", async ({ page }) => {
   await page.goto("/admin");
 
-  await expect(page.getByRole("heading", { name: "בית הכנסת תפארת ירושלים" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "בית הכנסת אור הגליל" })).toBeVisible();
   await expect(page.getByText("מסכים פעילים")).toBeVisible();
   await expect(page.getByRole("link", { name: "זמני תפילות" })).toBeVisible();
 });
@@ -19,7 +19,7 @@ test("admin dashboard renders demo data", async ({ page }) => {
 test("board renders fullscreen prayer screen", async ({ page }) => {
   await page.goto("/board/demo-board");
 
-  await expect(page.getByRole("heading", { name: "בית הכנסת תפארת ירושלים" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "בית הכנסת אור הגליל" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "זמני תפילות" })).toBeVisible();
   await expect(page.getByText("שחרית", { exact: true })).toBeVisible();
 });
