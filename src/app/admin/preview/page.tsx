@@ -7,7 +7,7 @@ export default async function PreviewPage() {
   return (
     <div className="overflow-hidden rounded-lg border border-border">
       <div className="origin-top-right scale-[0.42] md:scale-50 lg:scale-[0.62]" style={{ width: "161.3%", height: "161.3%" }}>
-        <BoardShell boardKey="demo-board" initialPayload={payload} />
+        <BoardShell boardKey="demo-board" initialPayload={payload} disableLocks />
       </div>
     </div>
   );

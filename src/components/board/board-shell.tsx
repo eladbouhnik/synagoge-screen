@@ -12,11 +12,12 @@ import { createClient } from "@/lib/supabase/client";
 interface BoardShellProps {
   boardKey: string;
   initialPayload: BoardPayload;
+  disableLocks?: boolean;
 }
 
 const cacheKey = (boardKey: string) => `synagogue-board:${boardKey}`;
 
-export function BoardShell({ boardKey, initialPayload }: BoardShellProps) {
+export function BoardShell({ boardKey, initialPayload, disableLocks = false }: BoardShellProps) {
   const [payload, setPayload] = useState<BoardPayload>(() => {
     if (typeof window === "undefined") return initialPayload;
     const cached = window.localStorage.getItem(cacheKey(boardKey));
@@ -27,7 +28,7 @@ export function BoardShell({ boardKey, initialPayload }: BoardShellProps) {
   const [lastSync, setLastSync] = useState(initialPayload.generatedAt);
   const screens = useMemo(() => getVisibleScreens(payload.screens), [payload.screens]);
   const currentScreen = screens[index] ?? screens[0];
-  const lockedScreen = useMemo(() => getLockedScreen(payload, screens, now), [now, payload, screens]);
+  const lockedScreen = useMemo(() => disableLocks ? null : getLockedScreen(payload, screens, now), [disableLocks, now, payload, screens]);
   const displayScreen = lockedScreen ?? currentScreen;
 
   const refresh = useCallback(async () => {
