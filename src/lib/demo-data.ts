@@ -40,15 +40,15 @@ export const demoSettings: BoardSettings = {
 };
 
 export const demoScreens: Screen[] = [
-  { id: "screen-tfilot", synagogue_id: synagogueId, type: "tfilot", title: "זמני תפילות", duration_seconds: 16, is_visible: true, sort_order: 10, config: {} },
-  { id: "screen-zmanim", synagogue_id: synagogueId, type: "zmanei_hayom", title: "זמני היום", duration_seconds: 14, is_visible: true, sort_order: 20, config: {} },
-  { id: "screen-messages", synagogue_id: synagogueId, type: "messages", title: "מודעות הקהילה", duration_seconds: 12, is_visible: true, sort_order: 30, config: {} },
-  { id: "screen-shiurim", synagogue_id: synagogueId, type: "shiurim", title: "שיעורי תורה", duration_seconds: 12, is_visible: true, sort_order: 40, config: {} },
-  { id: "screen-iluy", synagogue_id: synagogueId, type: "iluy_neshama", title: "לעילוי נשמת", duration_seconds: 12, is_visible: true, sort_order: 50, config: { layout: "center" } },
-  { id: "screen-halacha", synagogue_id: synagogueId, type: "halachot", title: "הלכה יומית", duration_seconds: 12, is_visible: true, sort_order: 60, config: {} },
-  { id: "screen-parnasim", synagogue_id: synagogueId, type: "parnasim", title: "פרנסי החודש", duration_seconds: 10, is_visible: true, sort_order: 70, config: {} },
-  { id: "screen-birthdays", synagogue_id: synagogueId, type: "birthdays", title: "ימי הולדת", duration_seconds: 10, is_visible: true, sort_order: 80, config: {} },
-  { id: "screen-clock", synagogue_id: synagogueId, type: "clock", title: "שעון", duration_seconds: 8, is_visible: true, sort_order: 90, config: {} },
+  { id: "screen-tfilot", synagogue_id: synagogueId, type: "tfilot", title: "זמני תפילות", duration_seconds: 16, is_visible: true, sort_order: 10, config: { background_variant: "parochet" } },
+  { id: "screen-zmanim", synagogue_id: synagogueId, type: "zmanei_hayom", title: "זמני היום", duration_seconds: 14, is_visible: true, sort_order: 20, config: { background_variant: "arches" } },
+  { id: "screen-messages", synagogue_id: synagogueId, type: "messages", title: "מודעות הקהילה", duration_seconds: 12, is_visible: true, sort_order: 30, config: { background_variant: "mosaic" } },
+  { id: "screen-shiurim", synagogue_id: synagogueId, type: "shiurim", title: "שיעורי תורה", duration_seconds: 12, is_visible: true, sort_order: 40, config: { background_variant: "stars" } },
+  { id: "screen-iluy", synagogue_id: synagogueId, type: "iluy_neshama", title: "לעילוי נשמת", duration_seconds: 12, is_visible: true, sort_order: 50, config: { layout: "center", background_variant: "pomegranates" } },
+  { id: "screen-halacha", synagogue_id: synagogueId, type: "halachot", title: "הלכה יומית", duration_seconds: 12, is_visible: true, sort_order: 60, config: { background_variant: "mosaic" } },
+  { id: "screen-parnasim", synagogue_id: synagogueId, type: "parnasim", title: "פרנסי החודש", duration_seconds: 10, is_visible: true, sort_order: 70, config: { background_variant: "arches" } },
+  { id: "screen-birthdays", synagogue_id: synagogueId, type: "birthdays", title: "ימי הולדת", duration_seconds: 10, is_visible: true, sort_order: 80, config: { background_variant: "pomegranates" } },
+  { id: "screen-clock", synagogue_id: synagogueId, type: "clock", title: "שעון", duration_seconds: 8, is_visible: true, sort_order: 90, config: { background_variant: "stars" } },
 ];
 
 export const demoMessages: Message[] = [

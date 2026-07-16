@@ -6,8 +6,9 @@ import { Check, Pencil, Plus, Trash2 } from "lucide-react";
 export interface FieldDef<T extends { id: string }> {
   key: keyof T;
   label: string;
-  type?: "text" | "textarea" | "number" | "time" | "date" | "checkbox" | "select" | "weekday-selector" | "tag-list";
+  type?: "text" | "textarea" | "number" | "time" | "date" | "checkbox" | "select" | "weekday-selector" | "tag-list" | "config-select";
   options?: { value: string; label: string }[];
+  configKey?: string;
 }
 
 interface ResourceManagerProps<T extends { id: string }> {
@@ -52,6 +53,7 @@ export function ResourceManager<T extends { id: string }>({
     const row = Object.fromEntries(fields.map((field) => {
       const name = String(field.key);
       const rawValue = formData.get(name);
+      const existingConfig = rows.find((item) => item.id === id)?.[field.key];
       const value = field.type === "checkbox"
         ? rawValue === "on"
         : field.type === "number"
@@ -60,6 +62,8 @@ export function ResourceManager<T extends { id: string }>({
             ? formData.getAll(name).map(String)
             : field.type === "tag-list"
               ? String(rawValue ?? "").split(",").map((item) => item.trim()).filter(Boolean)
+              : field.type === "config-select"
+                ? { ...(isRecord(existingConfig) ? existingConfig : {}), [field.configKey ?? "value"]: rawValue }
               : rawValue === "" && ["time", "date", "select"].includes(field.type ?? "")
                 ? null
                 : rawValue;
@@ -199,6 +203,10 @@ export function ResourceManager<T extends { id: string }>({
                   </span>
                 ) : field.type === "tag-list" ? (
                   <input name={String(field.key)} defaultValue={Array.isArray(active?.[field.key]) ? (active?.[field.key] as unknown[]).join(", ") : ""} placeholder="פסח, ראש השנה" className="h-11 rounded-md border border-border bg-background px-3 font-normal" />
+                ) : field.type === "config-select" ? (
+                  <select name={String(field.key)} defaultValue={getConfigValue(active?.[field.key], field.configKey)} className="h-11 rounded-md border border-border bg-background px-3 font-normal">
+                    {field.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
                 ) : (
                   <input name={String(field.key)} type={field.type ?? "text"} defaultValue={String(active?.[field.key] ?? "")} className="h-11 rounded-md border border-border bg-background px-3 font-normal" />
                 )}
@@ -220,4 +228,13 @@ function displayValue<T extends { id: string }>(field: FieldDef<T>, row: T) {
   if (Array.isArray(value)) return value.join(", ");
   const option = field.options?.find((item) => item.value === String(value));
   return option?.label ?? String(value ?? "");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getConfigValue(value: unknown, key: string | undefined): string {
+  const candidate = isRecord(value) ? value[key ?? ""] : null;
+  return typeof candidate === "string" ? candidate : "";
 }

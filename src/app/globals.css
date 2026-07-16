@@ -48,10 +48,29 @@ select {
 .board-shell {
   isolation: isolate;
   background-color: var(--board);
-  background-image: url("/images/royal-shabbat-parochet.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.board-theme-parochet {
+  background-image: url("/images/royal-shabbat-parochet.png");
+}
+
+.board-theme-arches {
+  background-image: url("/images/royal-shabbat-arches.png");
+}
+
+.board-theme-stars {
+  background-image: url("/images/royal-shabbat-stars.png");
+}
+
+.board-theme-mosaic {
+  background-image: url("/images/royal-shabbat-mosaic.png");
+}
+
+.board-theme-pomegranates {
+  background-image: url("/images/royal-shabbat-pomegranates.png");
 }
 
 .board-shell::after {

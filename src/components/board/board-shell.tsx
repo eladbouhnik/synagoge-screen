@@ -19,6 +19,21 @@ interface BoardShellProps {
 
 const cacheKey = (boardKey: string) => `synagogue-board:${boardKey}`;
 
+const themes = ["parochet", "arches", "stars", "mosaic", "pomegranates"] as const;
+type BoardTheme = (typeof themes)[number];
+
+const defaultThemes: Record<Screen["type"], BoardTheme> = {
+  tfilot: "parochet",
+  zmanei_hayom: "arches",
+  messages: "mosaic",
+  shiurim: "stars",
+  iluy_neshama: "pomegranates",
+  halachot: "mosaic",
+  parnasim: "arches",
+  birthdays: "pomegranates",
+  clock: "stars",
+};
+
 export function BoardShell({ boardKey, initialPayload, disableLocks = false }: BoardShellProps) {
   const [payload, setPayload] = useState<BoardPayload>(() => {
     if (typeof window === "undefined") return initialPayload;
@@ -130,7 +145,7 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
   }
 
   return (
-    <main className="board-shell relative min-h-screen overflow-hidden text-board-foreground">
+    <main className={`board-shell board-theme-${getBoardTheme(displayScreen as Screen)} relative min-h-screen overflow-hidden text-board-foreground`}>
       <div className="board-ornament board-ornament-right" aria-hidden="true"><Star /></div>
       <div className="board-ornament board-ornament-left" aria-hidden="true"><Star /></div>
       <div className="board-frame relative flex min-h-screen flex-col p-[3vw]">
@@ -160,6 +175,13 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
       </div>
     </main>
   );
+}
+
+function getBoardTheme(screen: Screen): BoardTheme {
+  const configured = screen.config.background_variant;
+  return typeof configured === "string" && themes.includes(configured as BoardTheme)
+    ? configured as BoardTheme
+    : defaultThemes[screen.type];
 }
 
 function readRows<T>(key: string, fallback: T[]) {
