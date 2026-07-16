@@ -13,7 +13,8 @@
   --board-foreground: oklch(0.96 0.015 92);
   --board-gold: oklch(0.79 0.105 86);
   --board-gold-muted: oklch(0.65 0.07 86 / 0.52);
-  --board-panel: oklch(0.22 0.036 255 / 0.78);
+  --board-panel: oklch(0.13 0.032 255 / 0.86);
+  --board-ivory: oklch(0.96 0.025 90);
 }
 
 @theme inline {
@@ -45,14 +46,29 @@ select {
 }
 
 .board-shell {
-  background: var(--board);
+  isolation: isolate;
+  background-color: var(--board);
+  background-image: url("/images/royal-shabbat-parochet.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.board-shell::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: oklch(0.11 0.028 255 / 0.34);
+  pointer-events: none;
 }
 
 .board-shell::before {
   content: "";
   position: absolute;
   inset: 1.15vw;
-  border: 1px solid var(--board-gold-muted);
+  border: 1px solid oklch(0.8 0.11 86 / 0.82);
+  box-shadow: inset 0 0 0 0.35rem oklch(0.13 0.035 255 / 0.22), inset 0 0 0 0.42rem oklch(0.72 0.095 86 / 0.42);
   pointer-events: none;
 }
 
@@ -63,7 +79,7 @@ select {
   top: 1.75rem;
   bottom: 1.75rem;
   width: 1px;
-  background: var(--board-gold-muted);
+  background: oklch(0.78 0.1 86 / 0.72);
   pointer-events: none;
 }
 
@@ -80,10 +96,89 @@ select {
   letter-spacing: 0;
 }
 
+.board-title-lockup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.board-title-lockup::after {
+  content: "";
+  display: block;
+  height: 1px;
+  width: 4rem;
+  background: var(--board-gold-muted);
+}
+
+.board-title-crown {
+  height: 2.25rem;
+  width: 2.25rem;
+  color: var(--board-gold);
+  stroke-width: 1.25;
+}
+
 .board-panel {
-  border: 1px solid var(--board-gold-muted);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid oklch(0.79 0.1 86 / 0.78);
   background: var(--board-panel);
-  box-shadow: inset 0 0 0 1px oklch(0.95 0.03 92 / 0.05);
+  box-shadow: inset 0 0 0 0.25rem oklch(0.08 0.026 255 / 0.52), inset 0 0 0 0.31rem oklch(0.78 0.1 86 / 0.28), 0 1.25rem 3rem oklch(0.04 0.02 255 / 0.32);
+}
+
+.board-panel::before,
+.board-panel::after {
+  content: "";
+  position: absolute;
+  height: 1.2rem;
+  width: 1.2rem;
+  border-color: var(--board-gold);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.board-panel::before {
+  top: 0.85rem;
+  right: 0.85rem;
+  border-right: 1px solid;
+  border-top: 1px solid;
+}
+
+.board-panel::after {
+  bottom: 0.85rem;
+  left: 0.85rem;
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+}
+
+.board-screen-title {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.board-screen-title-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--board-gold);
+}
+
+.board-screen-title-mark::before,
+.board-screen-title-mark::after {
+  content: "";
+  height: 1px;
+  width: 3rem;
+  background: var(--board-gold-muted);
+}
+
+.board-screen-title-mark svg {
+  height: 1.45rem;
+  width: 1.45rem;
+  stroke-width: 1.35;
+}
+
+.board-grand-time {
+  color: var(--board-ivory);
+  text-shadow: 0 0.2rem 1.25rem oklch(0.03 0.015 255 / 0.7);
 }
 
 .board-ornament {
@@ -94,7 +189,7 @@ select {
   width: 3rem;
   place-items: center;
   color: var(--board-gold);
-  opacity: 0.9;
+  opacity: 0.72;
 }
 
 .board-ornament svg {
@@ -137,8 +232,14 @@ select {
 
   .board-frame::before,
   .board-frame::after,
-  .board-ornament {
+  .board-ornament,
+  .board-title-lockup::after {
     display: none;
+  }
+
+  .board-screen-title-mark::before,
+  .board-screen-title-mark::after {
+    width: 1.5rem;
   }
 }
 

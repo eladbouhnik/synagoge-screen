@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Crown } from "lucide-react";
 import type { BoardPayload, Screen } from "@/types/domain";
 import { addMinutes, formatDate, formatTime, isActiveDateRange, parseLocalTime } from "@/lib/utils";
 import { getDailyZmanimForSynagogue, getZmanByKey } from "@/lib/zmanim/engine";
@@ -51,7 +52,7 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
           {resolved.map((item) => (
             <div key={item.source.id} className="board-panel p-7">
               <p className="text-3xl text-board-foreground/70">{item.label}</p>
-              <p className="mt-4 whitespace-nowrap text-5xl font-black leading-none xl:text-7xl">{formatTime(item.resolvedAt, payload.synagogue.timezone)}</p>
+              <p className="board-grand-time mt-4 whitespace-nowrap text-5xl font-black leading-none xl:text-7xl">{formatTime(item.resolvedAt, payload.synagogue.timezone)}</p>
               <p className="mt-4 text-2xl text-board-foreground/55">מניין {item.source.minyan_number}</p>
             </div>
           ))}
@@ -69,7 +70,7 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
           {entries.map(([key, value]) => (
             <div key={key} className="board-panel p-5">
               <p className="text-2xl text-board-foreground/65">{labels[key]}</p>
-              <p className="mt-2 whitespace-nowrap text-4xl font-black xl:text-5xl">{formatTime(value, payload.synagogue.timezone)}</p>
+              <p className="board-grand-time mt-2 whitespace-nowrap text-4xl font-black xl:text-5xl">{formatTime(value, payload.synagogue.timezone)}</p>
             </div>
           ))}
         </div>
@@ -131,7 +132,7 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
     return (
       <section className="grid content-center gap-8">
         <ScreenTitle title={screen.title} subtitle={automatic?.source ?? item?.category} />
-        <p className="max-w-5xl text-6xl font-black leading-tight text-board-foreground/90">{automatic?.title ?? item?.body ?? "אין הלכה נבחרת להצגה"}</p>
+        <p className="board-grand-time max-w-5xl text-6xl font-black leading-tight">{automatic?.title ?? item?.body ?? "אין הלכה נבחרת להצגה"}</p>
         {automatic ? <p className="text-2xl text-board-foreground/60">מקור מתעדכן אוטומטית, Hebcal</p> : null}
       </section>
     );
@@ -148,7 +149,7 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
   return (
     <section className="grid place-items-center text-center">
       <div>
-        <p className="text-9xl font-black">{new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}</p>
+        <p className="board-grand-time text-9xl font-black">{new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}</p>
         <p className="mt-6 text-5xl text-board-foreground/70">{formatDate(now, payload.synagogue.timezone)}</p>
         <p className="mt-3 text-4xl text-board-foreground/60">{hebrew.hebrewDate}</p>
       </div>
@@ -158,8 +159,9 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
 
 function ScreenTitle({ title, subtitle }: { title: string; subtitle?: string | null }) {
   return (
-    <div>
-      <h2 className="text-5xl font-black leading-none md:text-8xl">{title}</h2>
+    <div className="board-screen-title">
+      <div className="board-screen-title-mark" aria-hidden="true"><Crown /></div>
+      <h2 className="board-grand-time text-5xl font-black leading-none md:text-8xl">{title}</h2>
       {subtitle ? <p className="mt-3 text-3xl text-board-foreground/62">{subtitle}</p> : null}
     </div>
   );

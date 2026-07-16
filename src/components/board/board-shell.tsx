@@ -137,7 +137,10 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
         <header className="flex items-start justify-between gap-6 border-b border-[color:var(--board-gold-muted)] pb-5">
           <div>
             <p className="board-kicker text-2xl">{payload.synagogue.address}</p>
-            <h1 className="mt-1 text-4xl font-black leading-none md:text-7xl">{payload.synagogue.name}</h1>
+            <div className="board-title-lockup mt-1">
+              <Crown className="board-title-crown" aria-hidden="true" />
+              <h1 className="text-4xl font-black leading-none md:text-7xl">{payload.synagogue.name}</h1>
+            </div>
           </div>
           <div className="flex items-start gap-3 text-left text-board-foreground/70">
             <Crown className="mt-1 h-7 w-7 text-[color:var(--board-gold)]" aria-hidden="true" />
