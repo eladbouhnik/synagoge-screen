@@ -35,7 +35,7 @@ export function LoginForm({ initialError = null }: { initialError?: string | nul
         setPending(false);
         return;
       }
-      router.push("/welcome");
+      window.location.assign("/welcome");
     } catch {
       setError("שגיאה בהתחברות. נסו שוב.");
       setPending(false);

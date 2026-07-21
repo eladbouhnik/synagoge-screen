@@ -59,7 +59,7 @@ export function SignupForm() {
       if (data.session) {
         // Email confirmation disabled: bootstrap the synagogue now.
         await ensureSynagogue();
-        router.push("/welcome");
+        window.location.assign("/welcome");
         return;
       }
       // Email confirmation required: synagogue is created lazily on first login.
