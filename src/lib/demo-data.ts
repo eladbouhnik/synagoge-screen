@@ -37,6 +37,10 @@ export const demoSettings: BoardSettings = {
   zman_rounding: "nearest5",
   time_format: "24h",
   default_screen_duration: 14,
+  halacha_mode: "auto",
+  halacha_auto_source: "kitzurShulchanAruch",
+  alert_city: null,
+  header_date_display: ["gregorian", "hebrew"],
 };
 
 export const demoScreens: Screen[] = [
@@ -62,6 +66,9 @@ export const demoMessages: Message[] = [
     start_date: "2026-01-01",
     end_date: null,
     is_active: true,
+    urgency: "important",
+    show_from: null,
+    show_until: null,
   },
   {
     id: "message-2",
@@ -73,15 +80,18 @@ export const demoMessages: Message[] = [
     start_date: "2026-01-01",
     end_date: null,
     is_active: true,
+    urgency: "regular",
+    show_from: null,
+    show_until: null,
   },
 ];
 
 export const demoPrayerTimes: PrayerTime[] = [
-  { id: "pt-1", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית ותיקין", time_mode: "relative", fixed_time: null, relative_to: "sunrise", offset_minutes: -8, relative_day: null, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
-  { id: "pt-2", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית", time_mode: "fixed", fixed_time: "07:15", relative_to: null, offset_minutes: 0, relative_day: null, rounding: "none", minyan_number: 2, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
-  { id: "pt-3", synagogue_id: synagogueId, day_type: "weekday", prayer: "mincha", label: "מנחה", time_mode: "relative", fixed_time: null, relative_to: "sunset", offset_minutes: -20, relative_day: null, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
-  { id: "pt-4", synagogue_id: synagogueId, day_type: "weekday", prayer: "arvit", label: "ערבית", time_mode: "relative", fixed_time: null, relative_to: "tzet", offset_minutes: 5, relative_day: null, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
-  { id: "pt-5", synagogue_id: synagogueId, day_type: "shabbat", prayer: "mincha", label: "מנחה ערב שבת", time_mode: "relative", fixed_time: null, relative_to: "candle_lighting", offset_minutes: -20, relative_day: "friday", rounding: "nearest5", minyan_number: 1, days: ["friday"], is_active: true },
+  { id: "pt-1", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית ותיקין", time_mode: "relative", fixed_time: null, relative_to: "sunrise", offset_minutes: -8, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-2", synagogue_id: synagogueId, day_type: "weekday", prayer: "shacharit", label: "שחרית", time_mode: "fixed", fixed_time: "07:15", relative_to: null, offset_minutes: 0, rounding: "none", minyan_number: 2, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-3", synagogue_id: synagogueId, day_type: "weekday", prayer: "mincha", label: "מנחה", time_mode: "relative", fixed_time: null, relative_to: "sunset", offset_minutes: -20, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-4", synagogue_id: synagogueId, day_type: "weekday", prayer: "arvit", label: "ערבית", time_mode: "relative", fixed_time: null, relative_to: "tzet", offset_minutes: 5, rounding: "nearest5", minyan_number: 1, days: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday"], is_active: true },
+  { id: "pt-5", synagogue_id: synagogueId, day_type: "erev_shabbat", prayer: "mincha", label: "מנחה ערב שבת", time_mode: "relative", fixed_time: null, relative_to: "candle_lighting", offset_minutes: -20, rounding: "nearest5", minyan_number: 1, days: [], is_active: true },
 ];
 
 export const demoIluyNeshama: IluyNeshama[] = [
@@ -108,11 +118,27 @@ export const demoCongregants: Congregant[] = [
   { id: "cong-2", synagogue_id: synagogueId, full_name: "מיכל לוי", hebrew_birth_date: "כ״א תמוז", gregorian_birth_date: "2026-07-27", phone: null },
 ];
 
+function configuredDemoScreens(): Screen[] {
+  const designs = [
+    { layout: "feature", content_blocks: ["tfilot", "zmanei_hayom", "clock"], special_day: "all" },
+    { layout: "two-column", content_blocks: ["zmanei_hayom", "tfilot"], special_day: "all" },
+    { layout: "split", content_blocks: ["messages", "shiurim"], special_day: "all" },
+    { layout: "three-column", content_blocks: ["shiurim", "messages", "clock"], special_day: "all" },
+    { layout: "single", content_blocks: ["iluy_neshama"], special_day: "all" },
+    { layout: "ledger", content_blocks: ["halachot", "messages"], special_day: "all" },
+    { layout: "four-grid", content_blocks: ["parnasim", "birthdays", "messages", "clock"], special_day: "all" },
+    { layout: "two-column", content_blocks: ["birthdays", "iluy_neshama"], special_day: "all" },
+    { layout: "single", content_blocks: ["clock"], special_day: "all" },
+  ];
+
+  return demoScreens.map((screen, index) => ({ ...screen, config: { ...screen.config, ...designs[index] } }));
+}
+
 export function createDemoBoardPayload(): BoardPayload {
   return {
     synagogue: demoSynagogue,
     settings: demoSettings,
-    screens: demoScreens,
+    screens: configuredDemoScreens(),
     messages: demoMessages,
     prayerTimes: demoPrayerTimes,
     iluyNeshama: demoIluyNeshama,

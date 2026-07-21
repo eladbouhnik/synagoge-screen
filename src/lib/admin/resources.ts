@@ -6,6 +6,7 @@ import {
   demoParnasim,
   demoPrayerTimes,
   demoScreens,
+  demoSettings,
   demoShiurim,
   demoSynagogue,
 } from "@/lib/demo-data";
@@ -20,7 +21,8 @@ export type AdminResourceKey =
   | "parnasim"
   | "congregants"
   | "team-invitations"
-  | "settings";
+  | "settings"
+  | "board-settings";
 
 interface ResourceConfig {
   table: string;
@@ -40,6 +42,7 @@ export const adminResources: Record<AdminResourceKey, ResourceConfig> = {
   congregants: { table: "congregants", demoRows: demoCongregants, orderBy: "full_name" },
   "team-invitations": { table: "synagogue_invitations", demoRows: [], orderBy: "created_at" },
   settings: { table: "synagogues", demoRows: [demoSynagogue], singleton: true },
+  "board-settings": { table: "board_settings", demoRows: [demoSettings], singleton: true },
 };
 
 export function isAdminResourceKey(value: string): value is AdminResourceKey {

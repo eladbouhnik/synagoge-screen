@@ -131,6 +131,8 @@ export function getZmanByKey(zmanim: DailyZmanim, key: RelativeZmanKey | null) {
     sea_level_sunset: zmanim.seaLevelSunset,
     tzet: zmanim.tzet,
     tzet_72: zmanim.tzet72,
+    tzet_shabbat: zmanim.tzet,
+    tzet_shabbat_rt: zmanim.tzet72,
     candle_lighting: zmanim.candleLighting,
     plag_hamincha: zmanim.plagHamincha,
     chatzot: zmanim.chatzot,

@@ -1,6 +1,6 @@
 import type { PrayerTime, RoundingMode, Synagogue } from "@/types/domain";
 import { addMinutes, parseLocalTime } from "@/lib/utils";
-import { getDailyZmanimForSynagogue, getRelativeDate, getZmanByKey, roundZman } from "./engine";
+import { getDailyZmanimForSynagogue, getZmanByKey, roundZman } from "./engine";
 import { matchesSchedule } from "@/lib/schedule/rules";
 
 export interface ResolvedPrayerTime {
@@ -24,8 +24,7 @@ export function resolvePrayerTime(
   }
 
   if (prayerTime.time_mode === "relative" && prayerTime.relative_to) {
-    const anchorDate = getRelativeDate(date, prayerTime.relative_day);
-    const zmanim = getDailyZmanimForSynagogue(synagogue, anchorDate);
+    const zmanim = getDailyZmanimForSynagogue(synagogue, date);
     const anchor = getZmanByKey(zmanim, prayerTime.relative_to);
     resolvedAt = anchor ? addMinutes(anchor, prayerTime.offset_minutes) : null;
   }

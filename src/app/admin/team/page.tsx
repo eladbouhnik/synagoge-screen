@@ -17,6 +17,7 @@ export default function TeamPage() {
           { value: "owner", label: "בעלים" },
         ] },
       ]}
+      newRow={{ email: "", role: "editor" }}
     />
   );
 }

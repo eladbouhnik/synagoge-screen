@@ -45,6 +45,88 @@ select {
   font: inherit;
 }
 
+dialog.ui-dialog {
+  margin: auto;
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.985);
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), overlay 0.22s allow-discrete, display 0.22s allow-discrete;
+}
+
+dialog.ui-dialog[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@starting-style {
+  dialog.ui-dialog[open] {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.985);
+  }
+}
+
+dialog.ui-dialog::backdrop {
+  background: oklch(0.15 0.03 255 / 0.45);
+  backdrop-filter: blur(3px);
+}
+
+/* Board rendered inside a fixed-size stage (hero embed, previews): viewport
+   units on the shell must defer to the stage box. */
+.board-embed main.board-shell,
+.board-embed .board-frame {
+  min-height: 100% !important;
+  height: 100%;
+}
+
+.fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes alarm-pulse {
+  0%, 100% { background-color: oklch(0.38 0.22 25); }
+  50% { background-color: oklch(0.26 0.20 25); }
+}
+
+@keyframes alarm-ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(1 0 0 / 0.5); }
+  70% { box-shadow: 0 0 0 2.5rem oklch(1 0 0 / 0); }
+}
+
+.alarm-overlay {
+  animation: alarm-pulse 0.75s ease-in-out infinite;
+}
+
+.alarm-ring {
+  animation: alarm-ring-pulse 1s ease-out infinite;
+  background: oklch(1 0 0 / 0.12);
+}
+
+.alert-banner-pill {
+  background: oklch(0.32 0.12 65 / 0.88);
+  border: 1px solid oklch(0.65 0.14 75 / 0.45);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.08), 0 8px 32px oklch(0.28 0.12 60 / 0.6);
+  backdrop-filter: blur(12px);
+}
+
+@keyframes alert-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.75); }
+}
+
+.alert-dot {
+  animation: alert-dot-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .board-shell {
   isolation: isolate;
   background-color: var(--board);
@@ -71,6 +153,86 @@ select {
 
 .board-theme-pomegranates {
   background-image: url("/images/royal-shabbat-pomegranates.png");
+}
+
+.board-theme-ruby-parochet {
+  background-image: url("/images/royal-ruby-parochet.png");
+}
+
+.board-theme-ruby-arches {
+  background-image: url("/images/royal-ruby-arches.png");
+}
+
+.board-theme-ruby-stars {
+  background-image: url("/images/royal-ruby-stars.png");
+}
+
+.board-theme-ruby-mosaic {
+  background-image: url("/images/royal-ruby-mosaic.png");
+}
+
+.board-theme-ruby-pomegranates {
+  background-image: url("/images/royal-ruby-pomegranates.png");
+}
+
+.board-theme-emerald-parochet {
+  background-image: url("/images/royal-emerald-parochet.png");
+}
+
+.board-theme-emerald-arches {
+  background-image: url("/images/royal-emerald-arches.png");
+}
+
+.board-theme-emerald-stars {
+  background-image: url("/images/royal-emerald-stars.png");
+}
+
+.board-theme-emerald-mosaic {
+  background-image: url("/images/royal-emerald-mosaic.png");
+}
+
+.board-theme-emerald-pomegranates {
+  background-image: url("/images/royal-emerald-pomegranates.png");
+}
+
+.board-theme-ivory-parochet {
+  background-image: url("/images/royal-ivory-parochet.png");
+}
+
+.board-theme-ivory-arches {
+  background-image: url("/images/royal-ivory-arches.png");
+}
+
+.board-theme-ivory-stars {
+  background-image: url("/images/royal-ivory-stars.png");
+}
+
+.board-theme-ivory-mosaic {
+  background-image: url("/images/royal-ivory-mosaic.png");
+}
+
+.board-theme-ivory-pomegranates {
+  background-image: url("/images/royal-ivory-pomegranates.png");
+}
+
+.board-theme-teal-parochet {
+  background-image: url("/images/royal-teal-parochet.png");
+}
+
+.board-theme-teal-arches {
+  background-image: url("/images/royal-teal-arches.png");
+}
+
+.board-theme-teal-stars {
+  background-image: url("/images/royal-teal-stars.png");
+}
+
+.board-theme-teal-mosaic {
+  background-image: url("/images/royal-teal-mosaic.png");
+}
+
+.board-theme-teal-pomegranates {
+  background-image: url("/images/royal-teal-pomegranates.png");
 }
 
 .board-shell::after {
@@ -169,6 +331,37 @@ select {
   border-left: 1px solid;
 }
 
+.board-panel.message-important {
+  border-color: var(--board-gold);
+  box-shadow: inset 0 0 0 0.25rem oklch(0.08 0.026 255 / 0.52), inset 0 0 0 0.31rem oklch(0.78 0.1 86 / 0.55), 0 1.25rem 3rem oklch(0.04 0.02 255 / 0.32);
+}
+
+.board-panel.message-urgent {
+  border: 2px solid oklch(0.62 0.19 25 / 0.85);
+  box-shadow: inset 0 0 0 0.25rem oklch(0.08 0.026 255 / 0.52), inset 0 0 0 0.31rem oklch(0.62 0.16 25 / 0.4), 0 1.25rem 3rem oklch(0.04 0.02 255 / 0.32);
+  animation: message-urgent-pulse 2.6s ease-in-out infinite;
+}
+
+.message-urgent-badge {
+  display: inline-block;
+  margin-bottom: 0.8rem;
+  border-radius: 999px;
+  border: 1px solid oklch(0.62 0.19 25 / 0.9);
+  padding: 0.2rem 1rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: oklch(0.78 0.14 25);
+}
+
+.composed-message-urgent strong {
+  color: oklch(0.78 0.14 25);
+}
+
+@keyframes message-urgent-pulse {
+  0%, 100% { border-color: oklch(0.62 0.19 25 / 0.85); }
+  50% { border-color: oklch(0.75 0.16 25 / 1); }
+}
+
 .board-screen-title {
   display: grid;
   gap: 0.7rem;
@@ -198,6 +391,390 @@ select {
 .board-grand-time {
   color: var(--board-ivory);
   text-shadow: 0 0.2rem 1.25rem oklch(0.03 0.015 255 / 0.7);
+}
+
+.screen-editor-control {
+  height: 2.75rem;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--background);
+  padding: 0 0.75rem;
+  font-weight: 400;
+}
+
+/* grid-template-rows is explicit (not auto) so composed-screen-grid gets a
+   definite, non-circular height to stretch into — auto rows here would make
+   every downstream flex:1/cqh fill depend on content that depends on the
+   row's own auto size, which browsers resolve by collapsing to ~0. */
+.composed-screen {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  max-height: 100%;
+  gap: 1.75rem;
+  overflow: hidden;
+}
+
+.composed-screen-heading {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.composed-screen-heading p {
+  color: var(--board-gold);
+  font-size: 1.45rem;
+}
+
+.composed-screen-heading h2 {
+  color: var(--board-ivory);
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0.2rem 1.25rem oklch(0.03 0.015 255 / 0.7);
+}
+
+.composed-screen-grid {
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 1rem;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.composed-content-block {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  border: 1px solid oklch(0.79 0.1 86 / 0.78);
+  background: var(--board-panel);
+  box-shadow: inset 0 0 0 0.22rem oklch(0.08 0.026 255 / 0.52), inset 0 0 0 0.29rem oklch(0.78 0.1 86 / 0.26);
+  padding: clamp(1rem, 1.7vw, 1.65rem);
+}
+
+.composed-content-block::before,
+.composed-content-block::after {
+  content: "";
+  position: absolute;
+  height: 0.9rem;
+  width: 0.9rem;
+  border-color: var(--board-gold);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.composed-content-block::before {
+  top: 0.65rem;
+  right: 0.65rem;
+  border-right: 1px solid;
+  border-top: 1px solid;
+}
+
+.composed-content-block::after {
+  bottom: 0.65rem;
+  left: 0.65rem;
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+}
+
+.composed-content-block h3 {
+  color: var(--board-gold);
+  font-size: clamp(1.15rem, 1.8vw, 1.7rem);
+  font-weight: 800;
+}
+
+/* Rows/stack items divide the block's available height evenly (flex:1 with
+   container queries) instead of using a fixed font-size, so text auto-shrinks
+   as more items are added and never gets clipped by the overflow-hidden block. */
+.composed-rows,
+.composed-stack {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: clamp(0.2rem, 1.4cqh, 0.85rem);
+  margin-top: 1rem;
+}
+
+.composed-rows > div,
+.composed-stack > div {
+  container-type: size;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.composed-rows > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid oklch(0.79 0.1 86 / 0.22);
+}
+
+.composed-stack > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.composed-rows strong,
+.composed-stack strong {
+  color: var(--board-ivory);
+  font-size: clamp(1rem, 34cqh, 2.2rem);
+  font-weight: 800;
+}
+
+.composed-rows span,
+.composed-stack p {
+  color: oklch(0.92 0.02 90 / 0.72);
+  font-size: clamp(0.85rem, 24cqh, 1.5rem);
+  line-height: 1.3;
+}
+
+.composed-prose strong,
+.composed-clock strong {
+  color: var(--board-ivory);
+  font-size: clamp(1.1rem, 1.7vw, 1.7rem);
+  font-weight: 800;
+}
+
+.composed-prose p,
+.composed-empty,
+.composed-clock p {
+  color: oklch(0.92 0.02 90 / 0.72);
+  font-size: clamp(1rem, 1.35vw, 1.35rem);
+  line-height: 1.35;
+}
+
+.composed-empty {
+  display: flex;
+  flex: 1;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0;
+}
+
+.composed-prose,
+.composed-clock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  min-height: 0;
+}
+
+.composed-clock svg {
+  color: var(--board-gold);
+  height: 1.8rem;
+  width: 1.8rem;
+}
+
+.composed-single-block {
+  gap: clamp(2rem, 3vw, 3.5rem);
+}
+
+.composed-single-block .composed-screen-heading {
+  justify-items: center;
+  text-align: center;
+}
+
+.composed-single-block .composed-screen-heading p {
+  font-size: clamp(1.35rem, 2vw, 2.25rem);
+}
+
+.composed-single-block .composed-screen-heading h2 {
+  max-width: 13ch;
+  font-size: clamp(4rem, 8vw, 8.5rem);
+}
+
+.composed-single-block .composed-screen-grid {
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.composed-single-block .composed-content-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  padding: clamp(1.25rem, 2.5vw, 2.5rem);
+}
+
+.composed-single-block .composed-content-block h3 {
+  flex: 0 0 auto;
+  font-size: clamp(1.4rem, 2vw, 2.25rem);
+  text-align: center;
+}
+
+.composed-single-block .composed-rows,
+.composed-single-block .composed-stack,
+.composed-single-block .composed-prose,
+.composed-single-block .composed-clock {
+  gap: clamp(0.6rem, 1.1vw, 1.25rem);
+  margin-top: clamp(0.6rem, 1vw, 1.25rem);
+  min-height: 0;
+}
+
+.composed-single-block .composed-prose {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  text-align: right;
+  width: 100%;
+}
+
+.composed-single-block .composed-prose strong {
+  flex: 0 0 auto;
+  font-size: clamp(1.2rem, 1.7vw, 1.9rem);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.composed-single-block .composed-halacha-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.composed-single-block .composed-rows > div {
+  align-items: baseline;
+  gap: clamp(1.25rem, 2.5vw, 3rem);
+}
+
+.composed-single-block .composed-rows strong,
+.composed-single-block .composed-stack strong {
+  font-size: clamp(1.5rem, 34cqh, 4.6rem);
+}
+
+.composed-single-block .composed-rows span,
+.composed-single-block .composed-stack p {
+  font-size: clamp(1.2rem, 24cqh, 3.15rem);
+  line-height: 1.25;
+}
+
+.composed-single-block .composed-empty {
+  font-size: clamp(1.55rem, 2.8vw, 3.15rem);
+  line-height: 1.25;
+}
+
+/* Halacha body is a long paragraph meant to be read, not a glanceable stat:
+   a much smaller size than the other single-block content keeps enough
+   lines on screen at once that the auto-scroll doesn't hide most of it. */
+.composed-single-block .composed-prose p {
+  font-size: clamp(1.2rem, 1.6vw, 1.85rem);
+  line-height: 1.6;
+}
+
+.composed-single-block .composed-clock {
+  justify-items: center;
+  text-align: center;
+}
+
+.composed-single-block .composed-clock svg {
+  height: clamp(3rem, 5vw, 5rem);
+  width: clamp(3rem, 5vw, 5rem);
+}
+
+.composed-single-block .composed-clock strong {
+  font-size: clamp(5.5rem, 11vw, 11rem);
+  line-height: 0.9;
+}
+
+.composed-single-block .composed-clock p {
+  font-size: clamp(2rem, 3vw, 3.4rem);
+}
+
+.composed-layout-single .composed-screen-grid,
+.composed-layout-spotlight .composed-screen-grid,
+.composed-layout-poster .composed-screen-grid,
+.composed-layout-banner .composed-screen-grid,
+.composed-layout-ledger .composed-screen-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.composed-layout-spotlight .composed-screen-grid {
+  margin-inline: auto;
+  width: min(100%, 74rem);
+}
+
+.composed-layout-poster {
+  align-content: center;
+}
+
+.composed-layout-poster .composed-screen-grid {
+  margin-inline: auto;
+  min-height: min(60vh, 42rem);
+  width: min(100%, 82rem);
+}
+
+.composed-layout-poster .composed-content-block {
+  text-align: center;
+}
+
+.composed-layout-banner .composed-screen-grid {
+  align-items: center;
+}
+
+.composed-layout-banner .composed-content-block {
+  border-inline-width: 0;
+  padding-block: clamp(2rem, 4vw, 4.5rem);
+}
+
+.composed-layout-sidebar {
+  grid-template-columns: minmax(16rem, 0.42fr) minmax(0, 1fr);
+  align-items: center;
+  column-gap: clamp(2rem, 4vw, 5rem);
+}
+
+.composed-layout-sidebar .composed-screen-heading {
+  align-content: center;
+}
+
+.composed-layout-sidebar .composed-screen-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.composed-layout-feature .composed-screen-grid {
+  grid-template-columns: minmax(0, 1.7fr) repeat(2, minmax(0, 0.85fr));
+}
+
+.composed-layout-feature .composed-content-block:first-child {
+  grid-row: span 2;
+}
+
+.composed-layout-split .composed-screen-grid,
+.composed-layout-two-column .composed-screen-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.composed-layout-three-column .composed-screen-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.composed-layout-four-grid .composed-screen-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.composed-layout-ledger .composed-content-block {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
+  column-gap: 1.5rem;
+  align-items: start;
+}
+
+.composed-layout-ledger .composed-content-block > :not(h3) {
+  margin-top: 0;
 }
 
 .board-ornament {
@@ -260,6 +837,60 @@ select {
   .board-screen-title-mark::after {
     width: 1.5rem;
   }
+
+  .composed-layout-feature .composed-screen-grid,
+  .composed-layout-sidebar,
+  .composed-layout-split .composed-screen-grid,
+  .composed-layout-two-column .composed-screen-grid,
+  .composed-layout-three-column .composed-screen-grid,
+  .composed-layout-four-grid .composed-screen-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .composed-single-block .composed-rows > div {
+    display: grid;
+  }
+
+  .composed-layout-feature .composed-content-block:first-child {
+    grid-row: auto;
+  }
+
+  .composed-layout-ledger .composed-content-block {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.board-scroll-container {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+}
+
+.board-scroll-content {
+  animation: board-slow-scroll var(--scroll-duration, 20s) linear infinite alternate;
+}
+
+/* Hold briefly at the top and bottom so the start and end stay readable. */
+@keyframes board-slow-scroll {
+  0%,
+  10% {
+    transform: translateY(0);
+  }
+  90%,
+  100% {
+    transform: translateY(var(--scroll-distance, 0px));
+  }
+}
+
+.board-halacha-scroll {
+  height: 100%;
+  min-height: 0;
+}
+
+
+.composed-halacha-scroll {
+  min-height: 0;
+  max-height: clamp(6rem, 18vh, 12rem);
 }
 
 @media (prefers-reduced-motion: reduce) {

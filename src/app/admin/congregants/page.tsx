@@ -15,6 +15,7 @@ export default function CongregantsPage() {
         { key: "gregorian_birth_date", label: "תאריך לועזי", type: "date" },
         { key: "phone", label: "טלפון" },
       ]}
+      newRow={{ full_name: "", hebrew_birth_date: null, gregorian_birth_date: null, phone: null }}
     />
   );
 }

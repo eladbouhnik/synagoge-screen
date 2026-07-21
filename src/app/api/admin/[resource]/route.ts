@@ -4,6 +4,8 @@ import { createClient, hasSupabaseEnv } from "@/lib/supabase/server";
 
 type RowPayload = Record<string, unknown> & { id?: string };
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function json(data: unknown, status = 200) {
   return Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
 }
@@ -55,11 +57,20 @@ export async function POST(request: Request, context: { params: Promise<{ resour
 
   const config = adminResources[resource];
   const body = (await request.json()) as RowPayload;
-  const payload = config.table === "synagogues"
-    ? { ...body, id: synagogueId }
-    : { ...body, id: body.id ?? crypto.randomUUID(), synagogue_id: synagogueId };
+  const validId = typeof body.id === "string" && uuidPattern.test(body.id);
+  const id = validId ? body.id as string : crypto.randomUUID();
+  // board_settings' primary key is synagogue_id (no id column), so the generic
+  // id-based upsert shape would fail on it.
+  const { id: _ignoredId, ...bodyWithoutId } = body;
   const supabase = await createClient();
-  const { data, error } = await supabase.from(config.table).upsert(payload).select("*").single();
+  // synagogues has no RLS insert policy (rows are created only by the
+  // ensure_owner_synagogue RPC), so an upsert's insert path is always denied.
+  // The row is guaranteed to exist — update it instead.
+  const { data, error } = config.table === "synagogues"
+    ? await supabase.from(config.table).update(bodyWithoutId).eq("id", synagogueId).select("*").single()
+    : config.table === "board_settings"
+      ? await supabase.from(config.table).upsert({ ...bodyWithoutId, synagogue_id: synagogueId }).select("*").single()
+      : await supabase.from(config.table).upsert({ ...body, id, synagogue_id: synagogueId }).select("*").single();
 
   if (error) return json({ error: error.message }, 400);
   return json({ row: data });

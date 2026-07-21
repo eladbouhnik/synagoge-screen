@@ -1,22 +1,35 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export function proxy(request: NextRequest) {
-  const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-  const isAdmin = request.nextUrl.pathname.startsWith("/admin");
-  const isLogin = request.nextUrl.pathname.startsWith("/admin/login");
+export async function proxy(request: NextRequest) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const pathname = request.nextUrl.pathname;
+  const isProtected = pathname.startsWith("/admin") || pathname.startsWith("/welcome");
+  const isLegacyLogin = pathname.startsWith("/admin/login");
 
-  if (!hasSupabase || !isAdmin || isLogin) {
-    return NextResponse.next();
-  }
+  if (!url || !publishableKey) return NextResponse.next();
 
-  const hasAuthCookie = request.cookies.getAll().some((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token"));
-  if (!hasAuthCookie) {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
-  }
+  let response = NextResponse.next({ request });
+  const supabase = createServerClient(url, publishableKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        response = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+      },
+    },
+  });
 
-  return NextResponse.next();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (isProtected && !isLegacyLogin && !user) return NextResponse.redirect(new URL("/login", request.url));
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/welcome"],
 };

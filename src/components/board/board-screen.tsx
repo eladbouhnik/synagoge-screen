@@ -3,33 +3,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { Crown } from "lucide-react";
 import type { BoardPayload, Screen } from "@/types/domain";
-import { addMinutes, formatDate, formatTime, isActiveDateRange, parseLocalTime } from "@/lib/utils";
+import { addMinutes, formatDate, formatTime, parseLocalTime } from "@/lib/utils";
+import { isMessageVisible, sortMessagesByUrgency } from "@/lib/messages/visibility";
 import { getDailyZmanimForSynagogue, getZmanByKey } from "@/lib/zmanim/engine";
+import { getZmanDisplayEntries } from "@/lib/zmanim/displayEntries";
 import { getHebrewCalendarSummary } from "@/lib/zmanim/hebrewCalendar";
 import { resolvePrayerTimes } from "@/lib/zmanim/resolvePrayerTime";
-import type { DailyLearningItem } from "@/lib/halacha/daily-learning";
+import { pickDailyLearning, type DailyLearningItem } from "@/lib/halacha/daily-learning";
 import { matchesSchedule } from "@/lib/schedule/rules";
+import { isComposedScreen } from "@/lib/board/screen-config";
+import { AutoScrollText } from "./auto-scroll-text";
+import { ComposedScreen } from "./composed-screen";
 
 interface BoardScreenProps {
   payload: BoardPayload;
   screen: Screen;
+  now: Date;
+  headerDateLine?: string | null;
+  onScrollDuration?: (seconds: number | null) => void;
 }
 
-const labels: Record<string, string> = {
-  sunrise: "זריחה",
-  sofZmanShemaGra: "סוף זמן שמע",
-  sofZmanTfilaGra: "סוף זמן תפילה",
-  chatzot: "חצות",
-  minchaGedola: "מנחה גדולה",
-  minchaKetana: "מנחה קטנה",
-  plagHamincha: "פלג המנחה",
-  sunset: "שקיעה",
-  tzet: "צאת הכוכבים",
-  candleLighting: "הדלקת נרות",
-};
-
-export function BoardScreen({ payload, screen }: BoardScreenProps) {
-  const [now] = useState(() => new Date());
+export function BoardScreen({ payload, screen, now, headerDateLine, onScrollDuration }: BoardScreenProps) {
   const zmanim = useMemo(() => getDailyZmanimForSynagogue(payload.synagogue, now), [payload.synagogue, now]);
   const hebrew = useMemo(() => getHebrewCalendarSummary(now), [now]);
   const [dailyLearning, setDailyLearning] = useState<DailyLearningItem[]>([]);
@@ -42,6 +36,21 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
       .catch(() => { if (current) setDailyLearning([]); });
     return () => { current = false; };
   }, []);
+
+  if (isComposedScreen(screen)) {
+    return (
+      <ComposedScreen
+        payload={payload}
+        screen={screen}
+        now={now}
+        hebrewDate={hebrew.hebrewDate}
+        yomTov={hebrew.yomTov}
+        zmanim={zmanim}
+        dailyLearning={dailyLearning}
+        showDate={!headerDateLine}
+      />
+    );
+  }
 
   if (screen.type === "tfilot") {
     const resolved = resolvePrayerTimes(payload.prayerTimes, payload.synagogue, now, payload.settings.zman_rounding);
@@ -62,15 +71,15 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
   }
 
   if (screen.type === "zmanei_hayom") {
-    const entries = Object.entries(zmanim).filter(([key, value]) => key in labels && value instanceof Date) as [keyof typeof labels, Date][];
+    const entries = getZmanDisplayEntries(zmanim, now);
     return (
       <section className="grid content-center gap-8">
         <ScreenTitle title={screen.title} subtitle={[hebrew.hebrewDate, hebrew.parsha, hebrew.yomTov].filter(Boolean).join(" · ")} />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {entries.map(([key, value]) => (
-            <div key={key} className="board-panel p-5">
-              <p className="text-2xl text-board-foreground/65">{labels[key]}</p>
-              <p className="board-grand-time mt-2 whitespace-nowrap text-4xl font-black xl:text-5xl">{formatTime(value, payload.synagogue.timezone)}</p>
+          {entries.map((entry) => (
+            <div key={entry.key} className="board-panel p-5">
+              <p className="text-2xl text-board-foreground/65">{entry.label}</p>
+              <p className="board-grand-time mt-2 whitespace-nowrap text-4xl font-black xl:text-5xl">{formatTime(entry.value, payload.synagogue.timezone)}</p>
             </div>
           ))}
         </div>
@@ -79,13 +88,19 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
   }
 
   if (screen.type === "messages") {
-    const messages = payload.messages.filter((message) => message.is_active && isActiveDateRange(message.start_date, message.end_date, now));
+    const messages = sortMessagesByUrgency(
+      payload.messages.filter((message) => isMessageVisible(message, now, payload.synagogue.timezone)),
+    );
     return (
       <section className="grid content-center gap-8">
         <ScreenTitle title={screen.title} />
         <div className="grid gap-5 lg:grid-cols-2">
           {messages.map((message) => (
-            <article key={message.id} className="board-panel p-8">
+            <article
+              key={message.id}
+              className={`board-panel p-8 ${message.urgency === "urgent" ? "message-urgent" : message.urgency === "important" ? "message-important" : ""}`}
+            >
+              {message.urgency === "urgent" ? <p className="message-urgent-badge">דחוף</p> : null}
               <h3 className="text-5xl font-black">{message.title}</h3>
               <p className="mt-5 text-4xl leading-tight text-board-foreground/78">{message.body}</p>
             </article>
@@ -127,13 +142,23 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
   }
 
   if (screen.type === "halachot") {
-    const item = payload.halachot[Math.floor(now.getDate() % Math.max(payload.halachot.length, 1))];
-    const automatic = dailyLearning[Math.floor(now.getDate() % Math.max(dailyLearning.length, 1))];
+    const eligibleHalachot = payload.halachot.filter((item) => item.is_selected && (!item.holiday_tag || item.holiday_tag === hebrew.yomTov));
+    const item = eligibleHalachot[Math.floor(now.getDate() % Math.max(eligibleHalachot.length, 1))];
+    const halachaMode = payload.settings.halacha_mode ?? "auto";
+    // Auto mode prefers the daily-learning feed (manual as fallback if the fetch failed);
+    // manual mode shows only the synagogue's own halachot.
+    const automatic = halachaMode === "auto" ? pickDailyLearning(dailyLearning, payload.settings.halacha_auto_source) : undefined;
+    const body = automatic ? automatic.body : item?.body;
+    const heading = automatic ? `${automatic.source} · ${automatic.title}` : item?.category;
     return (
-      <section className="grid content-center gap-8">
-        <ScreenTitle title={screen.title} subtitle={automatic?.source ?? item?.category} />
-        <p className="board-grand-time max-w-5xl text-6xl font-black leading-tight">{automatic?.title ?? item?.body ?? "אין הלכה נבחרת להצגה"}</p>
-        {automatic ? <p className="text-2xl text-board-foreground/60">מקור מתעדכן אוטומטית, Hebcal</p> : null}
+      <section className="grid h-full min-h-0 grid-rows-[auto_1fr_auto] gap-2">
+        <ScreenTitle title={screen.title} subtitle={heading ?? undefined} tiny />
+        {body ? (
+          <AutoScrollText text={body} className="board-halacha-scroll" textClassName="board-grand-time text-3xl font-bold leading-snug" onScrollDuration={onScrollDuration} />
+        ) : (
+          <p className="board-grand-time max-w-5xl text-4xl font-black leading-tight">{automatic?.title ?? "אין הלכה נבחרת להצגה"}</p>
+        )}
+        {automatic ? <p className="text-lg text-board-foreground/60">מתעדכן אוטומטית מדי יום · מקור: ספריא</p> : null}
       </section>
     );
   }
@@ -157,12 +182,14 @@ export function BoardScreen({ payload, screen }: BoardScreenProps) {
   );
 }
 
-function ScreenTitle({ title, subtitle }: { title: string; subtitle?: string | null }) {
+function ScreenTitle({ title, subtitle, compact, tiny }: { title: string; subtitle?: string | null; compact?: boolean; tiny?: boolean }) {
+  const titleSize = tiny ? "text-xl md:text-2xl" : compact ? "text-3xl md:text-5xl" : "text-5xl md:text-8xl";
+  const subtitleSize = tiny ? "text-base" : compact ? "text-xl" : "text-3xl";
   return (
     <div className="board-screen-title">
       <div className="board-screen-title-mark" aria-hidden="true"><Crown /></div>
-      <h2 className="board-grand-time text-5xl font-black leading-none md:text-8xl">{title}</h2>
-      {subtitle ? <p className="mt-3 text-3xl text-board-foreground/62">{subtitle}</p> : null}
+      <h2 className={`board-grand-time font-black leading-none ${titleSize}`}>{title}</h2>
+      {subtitle ? <p className={`mt-1 text-board-foreground/62 ${subtitleSize}`}>{subtitle}</p> : null}
     </div>
   );
 }

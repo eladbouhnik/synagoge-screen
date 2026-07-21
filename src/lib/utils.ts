@@ -30,6 +30,19 @@ export function formatDate(date: Date | string, timeZone = "Asia/Jerusalem") {
   }).format(value);
 }
 
+export function formatWeekday(date: Date | string, timeZone = "Asia/Jerusalem") {
+  const value = typeof date === "string" ? new Date(date) : date;
+
+  return new Intl.DateTimeFormat("he-IL", { weekday: "long", timeZone }).format(value);
+}
+
+// Like formatDate, but without the weekday — for use alongside a separate weekday line.
+export function formatGregorianDate(date: Date | string, timeZone = "Asia/Jerusalem") {
+  const value = typeof date === "string" ? new Date(date) : date;
+
+  return new Intl.DateTimeFormat("he-IL", { day: "2-digit", month: "long", year: "numeric", timeZone }).format(value);
+}
+
 export function formatLocalIsoDate(date: Date | string, timeZone = "Asia/Jerusalem") {
   const value = typeof date === "string" ? new Date(date) : date;
   const parts = new Intl.DateTimeFormat("en-CA", {

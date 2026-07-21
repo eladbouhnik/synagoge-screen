@@ -37,8 +37,9 @@ export function matchesSchedule(entry: ScheduledEntry, date = new Date(), timeZo
 
   const dayType = getDayType(date);
   const isFriday = date.getDay() === 5;
+  if (entry.day_type === "erev_shabbat" && !isFriday) return false;
   if (entry.day_type === "weekday" && dayType !== "weekday") return false;
-  if (entry.day_type === "shabbat" && dayType !== "shabbat" && !isFriday) return false;
+  if (entry.day_type === "shabbat" && dayType !== "shabbat") return false;
   if (entry.day_type === "holiday" && dayType !== "holiday") return false;
 
   const currentDay = weekdayNames[date.getDay()];

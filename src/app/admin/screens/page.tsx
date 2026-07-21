@@ -1,28 +1,11 @@
-import { ResourceManager } from "@/components/admin/resource-manager";
-import { demoScreens } from "@/lib/demo-data";
+import { ScreenDesigner } from "@/components/admin/screen-designer";
+import { getAdminSynagogue } from "@/lib/admin/synagogue";
+import { getBoardPayload } from "@/lib/data/board";
+import { demoScreens, demoSynagogue } from "@/lib/demo-data";
 
-export default function ScreensPage() {
-  return (
-    <ResourceManager
-      title="מסכים"
-      subtitle="סדר, משך תצוגה ונראות בסבב"
-      storageKey="admin:screens"
-      resource="screens"
-      initialRows={demoScreens}
-      fields={[
-        { key: "title", label: "כותרת" },
-        { key: "type", label: "סוג מסך" },
-        { key: "duration_seconds", label: "משך בשניות", type: "number" },
-        { key: "config", label: "תפאורת רקע", type: "config-select", configKey: "background_variant", options: [
-          { value: "parochet", label: "פרוכת וכתר" },
-          { value: "arches", label: "היכל קשתות" },
-          { value: "stars", label: "שמי שבת" },
-          { value: "mosaic", label: "פסיפס ספיר" },
-          { value: "pomegranates", label: "רימונים ופרוכת" },
-        ] },
-        { key: "sort_order", label: "סדר", type: "number" },
-        { key: "is_visible", label: "מוצג", type: "checkbox" },
-      ]}
-    />
-  );
+export default async function ScreensPage() {
+  const synagogue = (await getAdminSynagogue()) ?? demoSynagogue;
+  const payload = await getBoardPayload(synagogue.board_key);
+
+  return <ScreenDesigner initialRows={payload.screens.length ? payload.screens : demoScreens} payload={payload} />;
 }

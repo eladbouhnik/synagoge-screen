@@ -9,7 +9,7 @@ export type Json =
 export type Nusach = "ספרדי" | "אשכנזי" | "תימני" | "חב\"ד";
 export type DateSwitchBasis = "24h" | "sunset";
 export type RoundingMode = "none" | "up5" | "down5" | "nearest5";
-export type DayType = "weekday" | "shabbat" | "holiday";
+export type DayType = "weekday" | "erev_shabbat" | "shabbat" | "holiday";
 export type TimeMode = "fixed" | "relative";
 export type RelativeZmanKey =
   | "sunrise"
@@ -22,6 +22,8 @@ export type RelativeZmanKey =
   | "sea_level_sunset"
   | "tzet"
   | "tzet_72"
+  | "tzet_shabbat"
+  | "tzet_shabbat_rt"
   | "candle_lighting"
   | "plag_hamincha"
   | "chatzot";
@@ -54,6 +56,10 @@ export interface Synagogue {
   created_at: string;
 }
 
+export type HalachaMode = "auto" | "manual";
+export type HalachaAutoSource = "dailyRambam1" | "arukhHaShulchanYomi" | "kitzurShulchanAruch";
+export type HeaderDateVariant = "gregorian" | "hebrew" | "parsha" | "weekday";
+
 export interface BoardSettings {
   synagogue_id: string;
   show_national_holidays: boolean;
@@ -61,6 +67,10 @@ export interface BoardSettings {
   zman_rounding: RoundingMode;
   time_format: "24h";
   default_screen_duration: number;
+  halacha_mode: HalachaMode;
+  halacha_auto_source: HalachaAutoSource;
+  alert_city: string | null;
+  header_date_display: HeaderDateVariant[];
 }
 
 export interface Screen {
@@ -74,6 +84,8 @@ export interface Screen {
   config: Record<string, Json>;
 }
 
+export type MessageUrgency = "regular" | "important" | "urgent";
+
 export interface Message {
   id: string;
   synagogue_id: string;
@@ -84,6 +96,9 @@ export interface Message {
   start_date: string | null;
   end_date: string | null;
   is_active: boolean;
+  urgency: MessageUrgency;
+  show_from: string | null;
+  show_until: string | null;
 }
 
 export interface PrayerTime {
@@ -96,7 +111,6 @@ export interface PrayerTime {
   fixed_time: string | null;
   relative_to: RelativeZmanKey | null;
   offset_minutes: number;
-  relative_day: RelativeDay | null;
   rounding: RoundingMode | null;
   minyan_number: number;
   days?: RelativeDay[];
