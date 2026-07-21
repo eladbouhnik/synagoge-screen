@@ -62,6 +62,13 @@ export function SignupForm() {
         window.location.assign("/welcome");
         return;
       }
+      // Supabase returns 200 with no error for a duplicate email (anti-enumeration) —
+      // the only tell is an empty identities array on the returned user.
+      if (data.user && data.user.identities?.length === 0) {
+        setError("כתובת האימייל כבר רשומה. נסו להתחבר.");
+        setPending(false);
+        return;
+      }
       // Email confirmation required: synagogue is created lazily on first login.
       setAwaitingEmail(true);
       setPending(false);

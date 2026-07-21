@@ -11,19 +11,26 @@ export async function getAdminSynagogue(): Promise<Synagogue | null> {
   if (!hasSupabaseEnv()) return demoSynagogue;
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (!user) {
+    if (userError) console.error("getAdminSynagogue: getUser failed", userError.message);
+    return null;
+  }
 
   const { data, error } = await supabase.rpc("ensure_owner_synagogue");
-  if (error) return null;
+  if (error) {
+    console.error("getAdminSynagogue: ensure_owner_synagogue failed", error.message);
+    return null;
+  }
   const membership = Array.isArray(data) ? data[0] : data;
   if (!membership?.synagogue_id) return null;
 
-  const { data: synagogue } = await supabase
+  const { data: synagogue, error: synagogueError } = await supabase
     .from("synagogues")
     .select("*")
     .eq("id", membership.synagogue_id)
     .single();
+  if (synagogueError) console.error("getAdminSynagogue: synagogue fetch failed", synagogueError.message);
 
   return (synagogue as Synagogue | null) ?? null;
 }
