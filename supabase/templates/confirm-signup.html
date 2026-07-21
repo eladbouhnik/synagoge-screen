@@ -1,36 +1,38 @@
 <!-- Supabase "Confirm signup" email template.
      Paste into: Supabase Dashboard -> Authentication -> Emails -> Confirm signup.
-     Keeps {{ .ConfirmationURL }} — Supabase fills it in. -->
+     Uses {{ .TokenHash }} + custom /auth/confirm link (not {{ .ConfirmationURL }}) so
+     the app's own /auth/confirm page (token_hash+type) handles verification —
+     behind a real button click, so mail-scanner link prefetching can't burn
+     the single-use token before the user clicks. -->
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" dir="rtl"
-  style="background-color:#f4f2ec;padding:32px 16px;font-family:'Assistant',Arial,Helvetica,sans-serif;">
+  style="background-color:#f5f2ea;padding:48px 16px;font-family:'Assistant',Arial,Helvetica,sans-serif;">
   <tr>
     <td align="center">
-      <table role="presentation" width="560" cellpadding="0" cellspacing="0"
-        style="max-width:560px;width:100%;background-color:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e2ddd0;">
+      <table role="presentation" width="540" cellpadding="0" cellspacing="0"
+        style="max-width:540px;width:100%;background-color:#ffffff;border-radius:22px;overflow:hidden;border:1px solid #ece6d6;box-shadow:0 24px 48px -28px rgba(27,35,64,0.28);">
 
-        <!-- Header: royal blue with gold rule -->
+        <!-- Header -->
         <tr>
-          <td style="background-color:#1c2540;padding:36px 40px 30px;text-align:center;">
-            <div style="font-size:34px;line-height:1;">&#128081;</div>
-            <div style="color:#e8c56a;font-size:14px;font-weight:700;letter-spacing:1px;margin-top:10px;">
+          <td style="background-color:#1b2340;padding:44px 44px 38px;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr><td style="width:36px;height:3px;background-color:#c8a35f;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td></tr>
+            </table>
+            <div style="color:#c8a35f;font-size:12px;font-weight:700;letter-spacing:1.5px;margin-top:18px;">
               לוח בית הכנסת
             </div>
-            <div style="color:#ffffff;font-size:24px;font-weight:800;margin-top:6px;">
-              ברוכים הבאים!
+            <div style="color:#ffffff;font-size:25px;font-weight:800;letter-spacing:-0.2px;margin-top:8px;">
+              ברוכים הבאים
             </div>
           </td>
-        </tr>
-        <tr>
-          <td style="background-color:#e8c56a;height:4px;font-size:0;line-height:0;">&nbsp;</td>
         </tr>
 
         <!-- Body -->
         <tr>
-          <td style="padding:36px 40px 8px;text-align:right;">
-            <p style="margin:0;color:#242b3d;font-size:18px;font-weight:700;">
+          <td style="padding:40px 44px 4px;text-align:right;">
+            <p style="margin:0;color:#1c2130;font-size:18px;font-weight:700;">
               עוד לחיצה אחת — והלוח שלכם באוויר
             </p>
-            <p style="margin:12px 0 0;color:#5a6272;font-size:15px;line-height:1.7;">
+            <p style="margin:12px 0 0;color:#666f7f;font-size:15px;line-height:1.75;">
               נשאר רק לאשר את כתובת המייל. מיד אחרי האישור ייפתח עבורכם לוח דיגיטלי חדש
               עם זמני תפילות, הודעות קהילה, שיעורים והלכה יומית — מוכן לחיבור למסך.
             </p>
@@ -39,28 +41,38 @@
 
         <!-- CTA -->
         <tr>
-          <td style="padding:28px 40px;text-align:center;">
-            <a href="{{ .ConfirmationURL }}"
-              style="display:inline-block;background-color:#1c2540;color:#e8c56a;text-decoration:none;font-size:17px;font-weight:800;padding:14px 44px;border-radius:8px;">
+          <td style="padding:32px 44px 12px;text-align:center;">
+            <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup&next=/welcome"
+              style="display:inline-block;background-color:#1b2340;color:#d9bb7c;text-decoration:none;font-size:16px;font-weight:700;letter-spacing:0.2px;padding:16px 48px;border-radius:999px;">
               אישור המייל ופתיחת הלוח
             </a>
+            <p style="margin:16px 0 0;color:#9a9fab;font-size:12.5px;">
+              הקישור בתוקף ל-24 שעות
+            </p>
           </td>
         </tr>
 
         <!-- Fallback link -->
         <tr>
-          <td style="padding:0 40px 28px;text-align:right;">
-            <p style="margin:0;color:#8a91a0;font-size:12px;line-height:1.6;">
-              הכפתור לא עובד? העתיקו את הקישור לדפדפן:<br>
-              <a href="{{ .ConfirmationURL }}" style="color:#8a91a0;word-break:break-all;" dir="ltr">{{ .ConfirmationURL }}</a>
+          <td style="padding:20px 44px 8px;text-align:right;">
+            <p style="margin:0 0 8px;color:#9a9fab;font-size:12.5px;">
+              הכפתור לא עובד? העתיקו את הקישור לדפדפן:
             </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background-color:#f7f5ef;border:1px solid #ece6d6;border-radius:10px;padding:12px 14px;">
+                  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup&next=/welcome"
+                    style="color:#666f7f;font-size:12px;word-break:break-all;font-family:Consolas,'Courier New',monospace;" dir="ltr">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup&next=/welcome</a>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="background-color:#f8f6f0;border-top:1px solid #e2ddd0;padding:20px 40px;text-align:center;">
-            <p style="margin:0;color:#8a91a0;font-size:12px;line-height:1.6;">
+          <td style="padding:32px 44px 40px;text-align:center;border-top:1px solid #f0ece0;margin-top:8px;">
+            <p style="margin:24px 0 0;color:#a7abb5;font-size:12px;line-height:1.7;">
               לוח דיגיטלי לבית הכנסת · זמנים מדויקים, הודעות ושיעורים במקום אחד<br>
               אם לא נרשמתם ללוח בית הכנסת — אפשר להתעלם מהמייל הזה בבטחה.
             </p>
