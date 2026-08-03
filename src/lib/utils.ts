@@ -55,6 +55,26 @@ export function formatLocalIsoDate(date: Date | string, timeZone = "Asia/Jerusal
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
+export function formatLocalIsoTime(date: Date | string, timeZone = "Asia/Jerusalem") {
+  const value = typeof date === "string" ? new Date(date) : date;
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(value);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("hour")}:${part("minute")}`;
+}
+
+// Interprets a Y-M-D + HH:MM pair as wall-clock time in `timeZone` and returns the matching instant.
+export function zonedTimeToUtc(dateStr: string, timeStr: string, timeZone = "Asia/Jerusalem") {
+  const asIfUtc = new Date(`${dateStr}T${timeStr}:00Z`);
+  const inv = new Date(asIfUtc.toLocaleString("en-US", { timeZone }));
+  const diff = asIfUtc.getTime() - inv.getTime();
+  return new Date(asIfUtc.getTime() + diff);
+}
+
 export function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60_000);
 }

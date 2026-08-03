@@ -24,7 +24,10 @@ interface BoardScreenProps {
 }
 
 export function BoardScreen({ payload, screen, now, headerDateLine, onScrollDuration }: BoardScreenProps) {
-  const zmanim = useMemo(() => getDailyZmanimForSynagogue(payload.synagogue, now), [payload.synagogue, now]);
+  const zmanim = useMemo(
+    () => getDailyZmanimForSynagogue(payload.synagogue, now, payload.settings.zmanim_opinions),
+    [payload.synagogue, payload.settings.zmanim_opinions, now],
+  );
   const hebrew = useMemo(() => getHebrewCalendarSummary(now), [now]);
   const [dailyLearning, setDailyLearning] = useState<DailyLearningItem[]>([]);
 
@@ -53,7 +56,7 @@ export function BoardScreen({ payload, screen, now, headerDateLine, onScrollDura
   }
 
   if (screen.type === "tfilot") {
-    const resolved = resolvePrayerTimes(payload.prayerTimes, payload.synagogue, now, payload.settings.zman_rounding);
+    const resolved = resolvePrayerTimes(payload.prayerTimes, payload.synagogue, now, payload.settings.zman_rounding, payload.settings.zmanim_opinions);
     return (
       <section className="grid content-center gap-8">
         <ScreenTitle title={screen.title} subtitle={`${formatDate(now, payload.synagogue.timezone)} · ${hebrew.hebrewDate}`} />

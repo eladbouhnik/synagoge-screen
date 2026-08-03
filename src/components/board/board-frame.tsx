@@ -5,6 +5,7 @@ interface BoardFrameProps {
   synagogue: Pick<Synagogue, "name" | "address">;
   headerEnd?: React.ReactNode;
   subheading?: React.ReactNode;
+  footerStart?: React.ReactNode;
   footerEnd?: React.ReactNode;
   frameClassName?: string;
   children: React.ReactNode;
@@ -12,7 +13,7 @@ interface BoardFrameProps {
 
 // Presentational chrome of the board: ornaments, gold frame, synagogue header
 // and footer. Used by the live board and by the admin preview.
-export function BoardFrame({ synagogue, headerEnd, subheading, footerEnd, frameClassName = "min-h-screen p-[3vw]", children }: BoardFrameProps) {
+export function BoardFrame({ synagogue, headerEnd, subheading, footerStart, footerEnd, frameClassName = "min-h-screen p-[3vw]", children }: BoardFrameProps) {
   return (
     <>
       <div className="board-ornament board-ornament-right" aria-hidden="true"><Star /></div>
@@ -30,8 +31,9 @@ export function BoardFrame({ synagogue, headerEnd, subheading, footerEnd, frameC
           {headerEnd}
         </header>
         <div className="grid min-h-0 flex-1 place-items-stretch overflow-hidden py-8">{children}</div>
-        <footer className="flex items-center justify-end border-t border-[color:var(--board-gold-muted)] pt-4 text-2xl text-board-foreground/70">
-          {footerEnd}
+        <footer className="flex items-center justify-between border-t border-[color:var(--board-gold-muted)] pt-4 text-2xl text-board-foreground/70">
+          <div>{footerStart}</div>
+          <div>{footerEnd}</div>
         </footer>
       </div>
     </>

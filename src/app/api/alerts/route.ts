@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
+import { parseActiveAlertText, type ActiveAlert } from "@/lib/alerts";
 
 const OREF_URL = "https://www.oref.org.il/WarningMessages/alert/alerts.json";
 
-export interface ActiveAlert {
-  id: string;
-  cat: string;
-  title: string;
-  data: string[];
-  desc: string;
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -22,18 +18,21 @@ export async function GET() {
       cache: "no-store",
     });
 
-    if (!response.ok) return NextResponse.json(null);
+    if (!response.ok) return jsonNoStore(null, 502);
 
     const text = await response.text();
-    if (!text || text.trim() === "") return NextResponse.json(null);
+    const parsed = parseActiveAlertText(text);
+    if (!parsed) return jsonNoStore(null);
 
-    const parsed = JSON.parse(text) as ActiveAlert;
-    if (!parsed?.data?.length) return NextResponse.json(null);
-
-    return NextResponse.json(parsed, {
-      headers: { "Cache-Control": "no-store, max-age=0" },
-    });
+    return jsonNoStore(parsed);
   } catch {
-    return NextResponse.json(null);
+    return jsonNoStore(null, 502);
   }
+}
+
+function jsonNoStore(body: ActiveAlert | null, status = 200) {
+  return NextResponse.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
+  });
 }

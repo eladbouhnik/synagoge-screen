@@ -16,7 +16,9 @@ export function ConfirmDeleteDialog({ open, itemLabel, onCancel, onConfirm }: Co
   const [step, setStep] = useState<1 | 2>(1);
 
   useEffect(() => {
-    if (!open) setStep(1);
+    if (open) return;
+    const timer = window.setTimeout(() => setStep(1), 0);
+    return () => window.clearTimeout(timer);
   }, [open]);
 
   return (

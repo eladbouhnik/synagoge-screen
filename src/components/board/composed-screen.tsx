@@ -56,7 +56,7 @@ function ContentBlock({ block, payload, now, yomTov, zmanim, dailyLearning }: Om
   let content: ReactNode;
 
   if (block === "tfilot") {
-    const prayers = resolvePrayerTimes(payload.prayerTimes, payload.synagogue, now, payload.settings.zman_rounding).slice(0, 4);
+    const prayers = resolvePrayerTimes(payload.prayerTimes, payload.synagogue, now, payload.settings.zman_rounding, payload.settings.zmanim_opinions).slice(0, 4);
     content = <Rows rows={prayers.map((item) => [item.label, formatTime(item.resolvedAt, payload.synagogue.timezone)])} empty="אין זמני תפילה להצגה" />;
   } else if (block === "zmanei_hayom") {
     const entries = getZmanDisplayEntries(zmanim, now).slice(0, 5);

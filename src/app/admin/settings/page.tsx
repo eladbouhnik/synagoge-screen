@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Building2, CalendarClock, Flame, MapPin, ShieldAlert } from "lucide-react";
+import { Building2, CalendarClock, Flame, MapPin, ShieldAlert, Sunrise } from "lucide-react";
 import { Checkbox, Field, Select, TextInput } from "@/components/ui/field";
 import { demoSettings, demoSynagogue } from "@/lib/demo-data";
 import { findCityByCoordinates, ISRAEL_CITIES, ISRAEL_TIMEZONE, type IsraelRegion } from "@/lib/locations/israel-cities";
-import { getDailyZmanim } from "@/lib/zmanim/engine";
+import { getDailyZmanim, ZMANIM_PRESETS } from "@/lib/zmanim/engine";
+import { dawnOptions, nightfallOptions, shemaTefilaOptions } from "@/lib/zmanim/opinionCopy";
 import { formatTime } from "@/lib/utils";
-import type { BoardSettings, HeaderDateVariant, Nusach, Synagogue } from "@/types/domain";
+import type { BoardSettings, DawnOpinion, HeaderDateVariant, NightfallOpinion, Nusach, ShemaTefilaOpinion, Synagogue } from "@/types/domain";
 
 const SYNAGOGUE_KEY = "admin:settings";
 const BOARD_SETTINGS_KEY = "admin:board-settings";
@@ -119,19 +120,39 @@ export default function SettingsPage() {
 
   const selectedCity = useMemo(() => ISRAEL_CITIES.find((city) => city.id === cityId) ?? null, [cityId]);
 
-  const preview = useMemo(() => {
+  const zmanimPreview = useMemo(() => {
     if (!synagogue.latitude || !synagogue.longitude) return null;
-    const zmanim = getDailyZmanim({
+    return getDailyZmanim({
       latitude: synagogue.latitude,
       longitude: synagogue.longitude,
       elevation: synagogue.elevation,
       timezone: ISRAEL_TIMEZONE,
       date: new Date(),
       candleLightingMinutes: synagogue.candle_lighting_minutes,
+      opinions: boardSettings.zmanim_opinions,
     });
-    if (!zmanim.sunset) return null;
-    return { sunset: zmanim.sunset, candleLighting: zmanim.candleLighting };
-  }, [synagogue.latitude, synagogue.longitude, synagogue.elevation, synagogue.candle_lighting_minutes]);
+  }, [synagogue.latitude, synagogue.longitude, synagogue.elevation, synagogue.candle_lighting_minutes, boardSettings.zmanim_opinions]);
+
+  const preview = zmanimPreview?.sunset ? { sunset: zmanimPreview.sunset, candleLighting: zmanimPreview.candleLighting } : null;
+
+  const matchedPresetId = useMemo(
+    () => ZMANIM_PRESETS.find((preset) => (
+      preset.opinions.dawn === boardSettings.zmanim_opinions.dawn
+      && preset.opinions.shema_tefila === boardSettings.zmanim_opinions.shema_tefila
+      && preset.opinions.nightfall === boardSettings.zmanim_opinions.nightfall
+    ))?.id ?? null,
+    [boardSettings.zmanim_opinions],
+  );
+
+  function applyZmanimPreset(presetId: string) {
+    const preset = ZMANIM_PRESETS.find((item) => item.id === presetId);
+    if (!preset) return;
+    setBoardSettings((current) => ({ ...current, zmanim_opinions: preset.opinions }));
+  }
+
+  function updateZmanimOpinion<K extends keyof BoardSettings["zmanim_opinions"]>(key: K, value: BoardSettings["zmanim_opinions"][K]) {
+    setBoardSettings((current) => ({ ...current, zmanim_opinions: { ...current.zmanim_opinions, [key]: value } }));
+  }
 
   function handleCityChange(value: string) {
     if (value === CUSTOM_LOCATION) {
@@ -287,6 +308,72 @@ export default function SettingsPage() {
               className="w-28"
             />
           </div>
+        </div>
+      </Section>
+
+      <Section icon={Sunrise} hue={30} title="שיטת חישוב זמנים" subtitle="בחרו מנהג התחלתי — ותמיד אפשר להתאים כל זמן בנפרד">
+        <div className="sm:col-span-2 grid gap-4">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            לחלק מזמני היום יש יותר משיטת חישוב אחת. בחרו מנהג להתחלה, והמערכת תמלא עבורכם את שלושת הבחירות למטה — ותמיד אפשר לשנות כל אחת בנפרד. ברירת המחדל היא נקודת פתיחה מקובלת בלבד; מומלץ לוודא מול רב הקהילה.
+          </p>
+
+          <div className="grid gap-2 sm:grid-cols-3">
+            {ZMANIM_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => applyZmanimPreset(preset.id)}
+                aria-pressed={matchedPresetId === preset.id}
+                className={`rounded-lg border p-3 text-right transition-colors ${matchedPresetId === preset.id ? "border-[var(--board-gold)] bg-[oklch(0.95_0.035_88)]" : "border-border hover:border-[var(--board-gold-muted)]"}`}
+              >
+                <p className="font-bold">{preset.label}</p>
+                <p className="mt-1 text-xs font-normal text-muted-foreground">{preset.description}</p>
+              </button>
+            ))}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="עלות השחר" hint={dawnOptions.find((o) => o.value === boardSettings.zmanim_opinions.dawn)?.hint}>
+              <Select
+                value={boardSettings.zmanim_opinions.dawn}
+                onChange={(e) => updateZmanimOpinion("dawn", e.target.value as DawnOpinion)}
+              >
+                {dawnOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </Select>
+            </Field>
+
+            <Field label="סוף זמן שמע/תפילה" hint={shemaTefilaOptions.find((o) => o.value === boardSettings.zmanim_opinions.shema_tefila)?.hint}>
+              <Select
+                value={boardSettings.zmanim_opinions.shema_tefila}
+                onChange={(e) => updateZmanimOpinion("shema_tefila", e.target.value as ShemaTefilaOpinion)}
+              >
+                {shemaTefilaOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </Select>
+            </Field>
+
+            <Field label="צאת הכוכבים" hint={nightfallOptions.find((o) => o.value === boardSettings.zmanim_opinions.nightfall)?.hint}>
+              <Select
+                value={boardSettings.zmanim_opinions.nightfall}
+                onChange={(e) => updateZmanimOpinion("nightfall", e.target.value as NightfallOpinion)}
+              >
+                {nightfallOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+
+          {zmanimPreview ? (
+            <p className="rounded-md bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
+              תצוגה מקדימה להיום: עלות השחר <strong className="text-foreground">{formatTime(zmanimPreview.alos, ISRAEL_TIMEZONE)}</strong>
+              {" · "}סוף זמן שמע <strong className="text-foreground">{formatTime(zmanimPreview.sofZmanShemaGra, ISRAEL_TIMEZONE)}</strong>
+              {" · "}צאת הכוכבים <strong className="text-foreground">{formatTime(zmanimPreview.tzet, ISRAEL_TIMEZONE)}</strong>
+            </p>
+          ) : null}
         </div>
       </Section>
 

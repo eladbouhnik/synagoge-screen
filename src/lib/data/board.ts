@@ -26,7 +26,7 @@ export async function getBoardPayload(boardKey: string): Promise<BoardPayload> {
     supabase.from("screens").select("*").eq("synagogue_id", synagogueId).order("sort_order"),
     supabase.from("messages").select("*").eq("synagogue_id", synagogueId).eq("is_active", true),
     supabase.from("prayer_times").select("*").eq("synagogue_id", synagogueId).order("minyan_number"),
-    supabase.from("iluy_neshama").select("*").eq("synagogue_id", synagogueId),
+    supabase.from("iluy_neshama").select("*").eq("synagogue_id", synagogueId).eq("status", "approved"),
     supabase.from("shiurim").select("*").eq("synagogue_id", synagogueId).eq("is_active", true),
     supabase.from("halachot").select("*").eq("synagogue_id", synagogueId).eq("is_selected", true),
     supabase.from("parnasim").select("*").eq("synagogue_id", synagogueId),

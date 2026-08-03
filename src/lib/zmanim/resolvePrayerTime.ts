@@ -1,4 +1,4 @@
-import type { PrayerTime, RoundingMode, Synagogue } from "@/types/domain";
+import type { PrayerTime, RoundingMode, Synagogue, ZmanimOpinions } from "@/types/domain";
 import { addMinutes, parseLocalTime } from "@/lib/utils";
 import { getDailyZmanimForSynagogue, getZmanByKey, roundZman } from "./engine";
 import { matchesSchedule } from "@/lib/schedule/rules";
@@ -15,6 +15,7 @@ export function resolvePrayerTime(
   synagogue: Synagogue,
   date = new Date(),
   defaultRounding: RoundingMode = "none",
+  opinions?: ZmanimOpinions,
 ): ResolvedPrayerTime {
   const rounding = prayerTime.rounding ?? defaultRounding;
   let resolvedAt: Date | null = null;
@@ -24,7 +25,7 @@ export function resolvePrayerTime(
   }
 
   if (prayerTime.time_mode === "relative" && prayerTime.relative_to) {
-    const zmanim = getDailyZmanimForSynagogue(synagogue, date);
+    const zmanim = getDailyZmanimForSynagogue(synagogue, date, opinions);
     const anchor = getZmanByKey(zmanim, prayerTime.relative_to);
     resolvedAt = anchor ? addMinutes(anchor, prayerTime.offset_minutes) : null;
   }
@@ -42,9 +43,10 @@ export function resolvePrayerTimes(
   synagogue: Synagogue,
   date = new Date(),
   defaultRounding: RoundingMode = "none",
+  opinions?: ZmanimOpinions,
 ) {
   return prayerTimes
     .filter((prayerTime) => matchesSchedule(prayerTime, date, synagogue.timezone))
-    .map((prayerTime) => resolvePrayerTime(prayerTime, synagogue, date, defaultRounding))
+    .map((prayerTime) => resolvePrayerTime(prayerTime, synagogue, date, defaultRounding, opinions))
     .sort((a, b) => (a.resolvedAt?.getTime() ?? Number.MAX_SAFE_INTEGER) - (b.resolvedAt?.getTime() ?? Number.MAX_SAFE_INTEGER));
 }

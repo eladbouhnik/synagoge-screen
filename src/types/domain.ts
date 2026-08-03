@@ -11,7 +11,18 @@ export type DateSwitchBasis = "24h" | "sunset";
 export type RoundingMode = "none" | "up5" | "down5" | "nearest5";
 export type DayType = "weekday" | "erev_shabbat" | "shabbat" | "holiday";
 export type TimeMode = "fixed" | "relative";
+export type DawnOpinion = "72" | "90" | "96" | "baal_hatanya";
+export type ShemaTefilaOpinion = "gra" | "mga" | "baal_hatanya";
+export type NightfallOpinion = "geonim" | "rabbeinu_tam" | "baal_hatanya";
+
+export interface ZmanimOpinions {
+  dawn: DawnOpinion;
+  shema_tefila: ShemaTefilaOpinion;
+  nightfall: NightfallOpinion;
+}
+
 export type RelativeZmanKey =
+  | "alos"
   | "sunrise"
   | "sea_level_sunrise"
   | "sof_zman_shema_gra"
@@ -71,6 +82,7 @@ export interface BoardSettings {
   halacha_auto_source: HalachaAutoSource;
   alert_city: string | null;
   header_date_display: HeaderDateVariant[];
+  zmanim_opinions: ZmanimOpinions;
 }
 
 export interface Screen {
@@ -128,6 +140,8 @@ export interface IluyNeshama {
   parent_name: string;
   hebrew_death_date: string;
   donor_name: string | null;
+  status: "pending" | "approved" | "rejected";
+  submitter_contact: string | null;
 }
 
 export interface Shiur {

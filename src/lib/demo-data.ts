@@ -11,6 +11,7 @@ import type {
   Shiur,
   Synagogue,
 } from "@/types/domain";
+import { DEFAULT_ZMANIM_OPINIONS } from "@/lib/zmanim/engine";
 
 const synagogueId = "11111111-1111-4111-8111-111111111111";
 
@@ -41,6 +42,7 @@ export const demoSettings: BoardSettings = {
   halacha_auto_source: "kitzurShulchanAruch",
   alert_city: null,
   header_date_display: ["gregorian", "hebrew"],
+  zmanim_opinions: DEFAULT_ZMANIM_OPINIONS,
 };
 
 export const demoScreens: Screen[] = [
@@ -95,8 +97,9 @@ export const demoPrayerTimes: PrayerTime[] = [
 ];
 
 export const demoIluyNeshama: IluyNeshama[] = [
-  { id: "in-1", synagogue_id: synagogueId, deceased_name: "רפאל בן מרים", gender: "זכר", parent_name: "מרים", hebrew_death_date: "י״ב תמוז", donor_name: "משפחת כהן" },
-  { id: "in-2", synagogue_id: synagogueId, deceased_name: "אסתר בת שרה", gender: "נקבה", parent_name: "שרה", hebrew_death_date: "ט״ו תמוז", donor_name: "משפחת לוי" },
+  { id: "in-1", synagogue_id: synagogueId, deceased_name: "רפאל בן מרים", gender: "זכר", parent_name: "מרים", hebrew_death_date: "י״ב תמוז", donor_name: "משפחת כהן", status: "approved", submitter_contact: null },
+  { id: "in-2", synagogue_id: synagogueId, deceased_name: "אסתר בת שרה", gender: "נקבה", parent_name: "שרה", hebrew_death_date: "ט״ו תמוז", donor_name: "משפחת לוי", status: "approved", submitter_contact: null },
+  { id: "in-3", synagogue_id: synagogueId, deceased_name: "יעקב בן חנה", gender: "זכר", parent_name: "חנה", hebrew_death_date: "כ׳ אלול", donor_name: null, status: "pending", submitter_contact: "050-1234567" },
 ];
 
 export const demoShiurim: Shiur[] = [
@@ -141,7 +144,7 @@ export function createDemoBoardPayload(): BoardPayload {
     screens: configuredDemoScreens(),
     messages: demoMessages,
     prayerTimes: demoPrayerTimes,
-    iluyNeshama: demoIluyNeshama,
+    iluyNeshama: demoIluyNeshama.filter((row) => row.status === "approved"),
     shiurim: demoShiurim,
     halachot: demoHalachot,
     parnasim: demoParnasim,

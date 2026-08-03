@@ -4,8 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Crown } from "lucide-react";
 import type { BoardPayload, HeaderDateVariant, Screen } from "@/types/domain";
-import type { ActiveAlert } from "@/app/api/alerts/route";
+import {
+  ALERT_POLL_MS,
+  CLIENT_ALERT_TIMEOUT_MS,
+  nextVisibleAlertState,
+  preserveVisibleAlertState,
+  type ActiveAlert,
+  type VisibleAlert,
+} from "@/lib/alerts";
 import { BoardFrame } from "./board-frame";
+import { YahrzeitQrBadge } from "./yahrzeit-qr-badge";
 import { getVisibleScreens, getNextScreenIndex } from "@/lib/rotation/rotation";
 import { BoardScreen } from "./board-screen";
 import { AlarmOverlay } from "./alarm-overlay";
@@ -22,6 +30,8 @@ interface BoardShellProps {
   boardKey: string;
   initialPayload: BoardPayload;
   disableLocks?: boolean;
+  /** Freezes the board's clock to this instant instead of the real time — used by the admin time-travel simulator. */
+  nowOverride?: Date;
 }
 
 const cacheKey = (boardKey: string) => `synagogue-board:v2:${boardKey}`;
@@ -35,7 +45,7 @@ const TEST_ALERT: ActiveAlert = {
   desc: "היכנסו למרחב המוגן מיד",
 };
 
-export function BoardShell({ boardKey, initialPayload, disableLocks = false }: BoardShellProps) {
+export function BoardShell({ boardKey, initialPayload, disableLocks = false, nowOverride }: BoardShellProps) {
   const searchParams = useSearchParams();
   const alertParam = searchParams.get("alert");
   const [payload, setPayload] = useState<BoardPayload>(() => {
@@ -43,12 +53,12 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
     const cached = window.localStorage.getItem(cacheKey(boardKey));
     return applyDemoOverrides(cached ? (JSON.parse(cached) as BoardPayload) : initialPayload);
   });
-  const [now, setNow] = useState(() => new Date());
+  const [internalNow, setInternalNow] = useState(() => new Date());
+  const now = nowOverride ?? internalNow;
   const [index, setIndex] = useState(0);
   const [lastSync, setLastSync] = useState(initialPayload.generatedAt);
-  const [rawAlert, setRawAlert] = useState<ActiveAlert | null>(null);
-  const [isLocalAlert, setIsLocalAlert] = useState(false);
-  const [halachaScrollDuration, setHalachaScrollDuration] = useState<number | null>(null);
+  const [visibleAlert, setVisibleAlert] = useState<VisibleAlert | null>(null);
+  const [halachaScrollDurationState, setHalachaScrollDurationState] = useState<{ key: string; durationSeconds: number | null } | null>(null);
   const screens = useMemo(
     () => getVisibleScreens(payload.screens).filter((screen) => isScreenActiveForDay(screen, now)),
     [now, payload.screens],
@@ -71,6 +81,10 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
   }, [now, payload.settings.header_date_display, payload.synagogue.timezone]);
   const lockedScreen = useMemo(() => disableLocks ? null : getLockedScreen(payload, screens, now), [disableLocks, now, payload, screens]);
   const displayScreen = lockedScreen ?? currentScreen;
+  const alertCity = payload.settings.alert_city?.trim() ?? "";
+  const activeVisibleAlert = alertCity && visibleAlert?.configuredCity === alertCity ? visibleAlert : null;
+  const alarmAlert = alertParam === "local" ? TEST_ALERT : activeVisibleAlert?.isLocal ? activeVisibleAlert.alert : null;
+  const bannerAlert = alertParam === "remote" ? TEST_ALERT : alertParam !== "local" && activeVisibleAlert && !activeVisibleAlert.isLocal ? activeVisibleAlert.alert : null;
 
   const refresh = useCallback(async () => {
     try {
@@ -93,10 +107,10 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
   }, [boardKey, initialPayload]);
 
   const scrollUntilDone = currentScreen?.type === "halachot" && !!currentScreen?.config?.scroll_until_done;
-
-  useEffect(() => {
-    setHalachaScrollDuration(null);
-  }, [currentScreen?.id, lockedScreen?.id]);
+  const scrollDurationKey = `${currentScreen?.id ?? "none"}:${lockedScreen?.id ?? "none"}`;
+  const halachaScrollDuration = halachaScrollDurationState?.key === scrollDurationKey
+    ? halachaScrollDurationState.durationSeconds
+    : null;
 
   useEffect(() => {
     if (lockedScreen) return;
@@ -109,14 +123,16 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
   }, [currentScreen, lockedScreen, scrollUntilDone, halachaScrollDuration, payload.settings.default_screen_duration, screens]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 60_000);
+    if (nowOverride) return;
+    const timer = window.setInterval(() => setInternalNow(new Date()), 60_000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [nowOverride]);
 
   useEffect(() => {
+    if (nowOverride) return;
     const timer = window.setInterval(refresh, 15 * 60 * 1000);
     return () => window.clearInterval(timer);
-  }, [refresh]);
+  }, [nowOverride, refresh]);
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
@@ -170,29 +186,43 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
   }, [boardKey, refresh]);
 
   useEffect(() => {
-    const cityStr = payload.settings.alert_city ?? "";
+    if (!alertCity) return;
 
-    function matchesCity(alert: ActiveAlert): boolean {
-      if (!cityStr) return false;
-      return alert.data.some((c) => c.includes(cityStr) || cityStr.includes(c));
-    }
+    let timeout: number | undefined;
+    let cancelled = false;
+    let controller: AbortController | null = null;
 
-    async function checkAlert() {
+    async function checkAlert(): Promise<void> {
+      const activeController = new AbortController();
+      controller = activeController;
+      const abortTimer = window.setTimeout(() => activeController.abort(), CLIENT_ALERT_TIMEOUT_MS);
+      const checkedAt = Date.now();
       try {
-        const res = await fetch("/api/alerts", { cache: "no-store" });
+        const res = await fetch("/api/alerts", { cache: "no-store", signal: activeController.signal });
+        if (!res.ok) throw new Error("Failed to check Home Front Command alerts.");
         const alert = (await res.json()) as ActiveAlert | null;
-        setRawAlert(alert);
-        setIsLocalAlert(alert ? matchesCity(alert) : false);
+        if (!cancelled) {
+          setVisibleAlert((current) => nextVisibleAlertState(current, alert, alertCity, checkedAt));
+        }
       } catch {
-        setRawAlert(null);
-        setIsLocalAlert(false);
+        if (!cancelled) {
+          setVisibleAlert((current) => preserveVisibleAlertState(current, Date.now(), alertCity));
+        }
+      } finally {
+        window.clearTimeout(abortTimer);
+        if (!cancelled) {
+          timeout = window.setTimeout(() => void checkAlert(), ALERT_POLL_MS);
+        }
       }
     }
 
     void checkAlert();
-    const interval = window.setInterval(() => void checkAlert(), 5_000);
-    return () => window.clearInterval(interval);
-  }, [payload.settings.alert_city]);
+    return () => {
+      cancelled = true;
+      controller?.abort();
+      if (timeout) window.clearTimeout(timeout);
+    };
+  }, [alertCity]);
 
   if (!displayScreen) {
     return (
@@ -204,17 +234,17 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
 
   return (
     <main className={`board-shell board-theme-${getBoardTheme(displayScreen as Screen)} relative h-screen overflow-hidden text-board-foreground`}>
-      {(alertParam === "local" || (rawAlert && isLocalAlert)) && (
+      {alarmAlert && (
         <AlarmOverlay
-          title={(alertParam === "local" ? TEST_ALERT : rawAlert)!.title}
-          desc={(alertParam === "local" ? TEST_ALERT : rawAlert)!.desc}
-          cities={(alertParam === "local" ? TEST_ALERT : rawAlert)!.data}
+          title={alarmAlert.title}
+          desc={alarmAlert.desc}
+          cities={alarmAlert.data}
         />
       )}
-      {alertParam !== "local" && (alertParam === "remote" || (rawAlert && !isLocalAlert)) && (
+      {bannerAlert && (
         <AlertBanner
-          title={(alertParam === "remote" ? TEST_ALERT : rawAlert)!.title}
-          cities={(alertParam === "remote" ? TEST_ALERT : rawAlert)!.data}
+          title={bannerAlert.title}
+          cities={bannerAlert.data}
         />
       )}
       <BoardFrame
@@ -230,6 +260,7 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
             </div>
           </div>
         }
+        footerStart={<YahrzeitQrBadge boardKey={boardKey} />}
         footerEnd={<span>{index + 1}/{screens.length}</span>}
       >
         <BoardScreen
@@ -237,7 +268,11 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false }: B
           screen={displayScreen as Screen}
           now={now}
           headerDateLine={headerDateLine}
-          onScrollDuration={scrollUntilDone && !lockedScreen ? setHalachaScrollDuration : undefined}
+          onScrollDuration={
+            scrollUntilDone && !lockedScreen
+              ? (durationSeconds) => setHalachaScrollDurationState({ key: scrollDurationKey, durationSeconds })
+              : undefined
+          }
         />
       </BoardFrame>
     </main>
@@ -287,7 +322,7 @@ function getLockedScreen(payload: BoardPayload, screens: Screen[], now: Date) {
   const clockScreen = screens.find((screen) => screen.type === "clock");
   if (!clockScreen) return null;
 
-  const prayers = resolvePrayerTimes(payload.prayerTimes, payload.synagogue, now, payload.settings.zman_rounding);
+  const prayers = resolvePrayerTimes(payload.prayerTimes, payload.synagogue, now, payload.settings.zman_rounding, payload.settings.zmanim_opinions);
   const hasActivePrayerWindow = prayers.some((item) => {
     if (!item.resolvedAt) return false;
     const start = addMinutes(item.resolvedAt, -5).getTime();
@@ -297,7 +332,7 @@ function getLockedScreen(payload: BoardPayload, screens: Screen[], now: Date) {
 
   if (hasActivePrayerWindow) return clockScreen;
 
-  const zmanim = getDailyZmanimForSynagogue(payload.synagogue, now);
+  const zmanim = getDailyZmanimForSynagogue(payload.synagogue, now, payload.settings.zmanim_opinions);
   const activeShiur = payload.shiurim.some((shiur) => {
     if (!matchesSchedule(shiur, now, payload.synagogue.timezone)) return false;
     const start = shiur.time_mode === "fixed" && shiur.fixed_time

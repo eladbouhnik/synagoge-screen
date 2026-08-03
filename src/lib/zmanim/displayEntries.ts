@@ -7,6 +7,7 @@ export interface ZmanDisplayEntry {
 }
 
 const zmanLabels: Record<string, string> = {
+  alos: "עלות השחר",
   sunrise: "זריחה",
   sofZmanShemaGra: "סוף זמן שמע",
   sofZmanTfilaGra: "סוף זמן תפילה",
