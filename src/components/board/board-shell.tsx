@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Crown } from "lucide-react";
 import type { BoardPayload, HeaderDateVariant, Screen } from "@/types/domain";
 import {
   ALERT_POLL_MS,
@@ -252,12 +251,9 @@ export function BoardShell({ boardKey, initialPayload, disableLocks = false, now
         frameClassName="h-full p-[3vw]"
         subheading={headerDateLine}
         headerEnd={
-          <div className="flex items-start gap-3 text-left text-board-foreground/70">
-            <Crown className="mt-1 h-7 w-7 text-[color:var(--board-gold)]" aria-hidden="true" />
-            <div>
-              <p>סנכרון אחרון</p>
-              <p>{new Date(lastSync).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}</p>
-            </div>
+          <div className="text-left text-board-foreground/70">
+            <p className="board-kicker text-base">סנכרון אחרון</p>
+            <p className="text-xl">{new Date(lastSync).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}</p>
           </div>
         }
         footerStart={<YahrzeitQrBadge boardKey={boardKey} />}

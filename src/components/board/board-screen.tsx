@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Crown } from "lucide-react";
 import type { BoardPayload, Screen } from "@/types/domain";
 import { addMinutes, formatDate, formatTime, parseLocalTime } from "@/lib/utils";
 import { isMessageVisible, sortMessagesByUrgency } from "@/lib/messages/visibility";
@@ -190,7 +189,7 @@ function ScreenTitle({ title, subtitle, compact, tiny }: { title: string; subtit
   const subtitleSize = tiny ? "text-base" : compact ? "text-xl" : "text-3xl";
   return (
     <div className="board-screen-title">
-      <div className="board-screen-title-mark" aria-hidden="true"><Crown /></div>
+      <div className="board-screen-title-rule" aria-hidden="true" />
       <h2 className={`board-grand-time font-black leading-none ${titleSize}`}>{title}</h2>
       {subtitle ? <p className={`mt-1 text-board-foreground/62 ${subtitleSize}`}>{subtitle}</p> : null}
     </div>
